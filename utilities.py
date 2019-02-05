@@ -1,31 +1,28 @@
-# This file contains functions and classes which can be classified as utilitie functions for a more
-# general purpose. Furthermore, this functions are for python analysis for ALIBAVA files.
+"""This file contains functions and classes which can be classified as utilitie
+functions for a more general purpose. Furthermore, these functions are for
+python analysis of ALIBAVA files."""
+# pylint: disable=C0103,R1710,R0903
 
-__version__ = 0.1
-__date__ = "13.12.2018"
-__author__ = "Dominic Bloech"
-__email__ = "dominic.bloech@oeaw.ac.at"
-
-# Import statements
 import os
 import sys
-from tqdm import tqdm
-import h5py
 import yaml
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 from warnings import warn
 from six.moves import cPickle as pickle #for performance
+# COMMENT: tqdm and h5py are both missing in requirements
+from tqdm import tqdm
+import h5py
 
 def create_dictionary(file, filepath):
     '''Creates a dictionary with all values written in the file using yaml'''
 
     file_string = os.path.abspath(os.getcwd() + str(filepath) + "\\" + str(file))
-    print ("Loading file: " + str(file))
+    print("Loading file: " + str(file))
     with open(file_string, "r") as yfile:
-        dict = yaml.load(yfile)
-        return dict
+        dic = yaml.load(yfile)
+        return dic
 
 def import_h5(*pathes):
     """
@@ -36,30 +33,31 @@ def import_h5(*pathes):
     """
 
     # Check if a list was passed
-    if type(pathes[0]) == list:
+    if isinstance(pathes[0]) == list:
         pathes = pathes[0]
 
     # First check if pathes exist and if so import
     loaded_files = []
     try:
-        for path in tqdm(pathes, desc= "Loading files:"):
+        for path in tqdm(pathes, desc="Loading files:"):
             if os.path.exists(os.path.normpath(path)):
                 # Now import all hdf5 files
                 loaded_files.append(h5py.File(os.path.normpath(path), 'r'))
             else:
                 raise Exception('The path {!s} does not exist.'.format(path))
         return loaded_files
-    except OSError as e:
-        print("Enountered an OSError: {!s}".format(e))
+    except OSError as err:
+        print("Enountered an OSError: {!s}".format(err))
         return False
 
 def get_xy_data(data, header=0):
-    """This functions takes a list of strings, containing a header and xy data, return values are 2D np.array of the data and the header lines"""
+    """This functions takes a list of strings, containing a header and xy data,
+    return values are 2D np.array of the data and the header lines"""
 
-    np2Darray = np.zeros((len(data)-int(header),2), dtype=np.float32)
+    np2Darray = np.zeros((len(data)-int(header), 2), dtype=np.float32)
     for i, item in enumerate(data):
         if i > header-1:
-            list_data = list(map(float,item.split()))
+            list_data = list(map(float, item.split()))
             np2Darray[i-header] = np.array(list_data)
     return np2Darray
 
@@ -69,18 +67,19 @@ def read_file(filepath):
         with open(os.path.normpath(filepath), 'r') as f:
             read_data = f.readlines()
         return read_data
-    else:
-        print("No valid path passed: {!s}".format(filepath))
-        return None
+    print("No valid path passed: {!s}".format(filepath))
+    return None
 
-def clustering(self, estimator):
-    """Does the clustering up to the max cluster number, you just need the estimator and its config parameters"""
+def clustering(estimator):
+    """Does the clustering up to the max cluster number, you just need the
+    estimator and its config parameters"""
     return estimator
 
 def count_sub_length(ndarray):
-    """This function count the length of sub elements (depth 1) in the ndarray and returns an array with the lengthes
-    with the same dimension as ndarray"""
+    """This function count the length of sub elements (depth 1) in the ndarray
+    and returns an array with the lengthes with the same dimension as ndarray"""
     results = np.zeros(len(ndarray))
+    # COMMENT: there is a neat built-in function for this called enumerate
     for i in range(len(ndarray)):
         if len(ndarray[i]) == 1:
             results[i] = len(ndarray[i][0])
@@ -88,8 +87,9 @@ def count_sub_length(ndarray):
 
 
 def convert_ADC_to_e(signal, interpolation_function):
-    """
-    Gets the signal in ADC and the interpolatrion function and returns an array with the interpolated singal in electorns
+    """Gets the signal in ADC, the interpolatrion function and returns an
+    array with the interpolated singal in electorns
+
     :param signal: Singnal array which should be converted, basically the singal from every strip
     :param interpolation_function: the interpolation function
     :return: Returns array with the electron count
@@ -105,10 +105,12 @@ def save_all_plots(name, folder, figs=None, dpi=200):
     :param dpi: image dpi
     :return: None
     """
+    # COMMENT: dpi unused???'
     try:
         pp = PdfPages(os.path.normpath(folder) + "\\" + name + ".pdf")
     except PermissionError:
-        print("While overwriting the file {!s} a permission error occured, please close file if opened!".format(name + ".pdf"))
+        print("While overwriting the file {!s} a permission error occured, "
+              "please close file if opened!".format(name + ".pdf"))
         return
     if figs is None:
         figs = [plt.figure(n) for n in plt.get_fignums()]
@@ -118,26 +120,30 @@ def save_all_plots(name, folder, figs=None, dpi=200):
 
 class NoStdStreams(object):
     """Surpresses all output of a function when called with with """
-    def __init__(self,stdout = None, stderr = None):
-        self.devnull = open(os.devnull,'w')
+    def __init__(self, stdout=None, stderr=None):
+        self.devnull = open(os.devnull, 'w')
         self._stdout = stdout or self.devnull or sys.stdout
         self._stderr = stderr or self.devnull or sys.stderr
 
     def __enter__(self):
         self.old_stdout, self.old_stderr = sys.stdout, sys.stderr
-        self.old_stdout.flush(); self.old_stderr.flush()
+        self.old_stdout.flush()
+        self.old_stderr.flush()
         sys.stdout, sys.stderr = self._stdout, self._stderr
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self._stdout.flush(); self._stderr.flush()
+        self._stdout.flush()
+        self._stderr.flush()
         sys.stdout = self.old_stdout
         sys.stderr = self.old_stderr
         self.devnull.close()
 
 def gaussian(x, mu, sig, a):
+    """Doc of function"""
     return a*np.exp(-np.power(x - mu, 2.) / (2. * np.power(sig, 2.)))
 
-def langau_cluster(cls_ind, valid_events_Signal, valid_events_clusters, charge_cal, noise):
+def langau_cluster(cls_ind, valid_events_Signal, valid_events_clusters,
+                   charge_cal, noise):
     """Calculates the energy of events, clustersize independend"""
     # for size in tqdm(clustersize_list, desc="(langau) Processing clustersize"):
     totalE = np.zeros(len(cls_ind))
@@ -147,12 +153,18 @@ def langau_cluster(cls_ind, valid_events_Signal, valid_events_clusters, charge_c
     for ind in tqdm(cls_ind, desc="(langau) Processing event"):
         # TODO: make this work for multiple cluster in one event
         # Signal calculations
-        signal_clst_event = np.take(valid_events_Signal[ind], valid_events_clusters[ind][0])
-        totalE[incrementor] = np.sum(convert_ADC_to_e(signal_clst_event, charge_cal))
+        signal_clst_event = np.take(valid_events_Signal[ind],
+                                    valid_events_clusters[ind][0])
+        totalE[incrementor] = np.sum(convert_ADC_to_e(signal_clst_event,
+                                                      charge_cal))
 
         # Noise Calculations
-        noise_clst_event = np.take(noise, valid_events_clusters[ind][0])  # Get the Noise of an event
-        totalNoise[incrementor] = np.sqrt(np.sum(convert_ADC_to_e(noise_clst_event, charge_cal)))  # eError is a list containing electron signal noise
+
+        # Get the Noise of an event
+        noise_clst_event = np.take(noise, valid_events_clusters[ind][0])
+        # eError is a list containing electron signal noise
+        totalNoise[incrementor] = np.sqrt(np.sum(\
+                convert_ADC_to_e(noise_clst_event, charge_cal)))
 
         incrementor += 1
 
@@ -183,12 +195,13 @@ def get_size(obj, seen=None):
 
 
 class Bdata:
-    """Creates an object which can handle numpy arrays. By passing lables you can get the columns of the multidimensional array.
-    Its like a pandas array but with way less overhead.
+    """Creates an object which can handle numpy arrays. By passing lables you
+    can get the columns of the multidimensional array. Its like a pandas array
+    but with way less overhead.
     If you store a Bdata object you can get columns by accessing it via Bdata['label']
     Not passing an argument results in """
 
-    def __init__(self, data = np.array([]), labels = None):
+    def __init__(self, data=np.array([]), labels=None):
         self.data = data
         self.labels = labels
 
@@ -196,6 +209,7 @@ class Bdata:
             warn("Data missmatch!")
 
     def __getitem__(self, arg=None):
+        # COMMENT: else returns 'None' is correct?
         if arg:
             return self.get(arg)
 
@@ -203,13 +217,17 @@ class Bdata:
         return repr(self.data)
 
     def get(self, label):
-        return self.data[:,self.labels.index(label)]
+        """DOC of function"""
+        return self.data[:, self.labels.index(label)]
 
 def save_dict(di_, filename_):
+    """DOC of function"""
+
     with open(os.path.normpath(filename_), 'wb') as f:
         pickle.dump(di_, f)
 
 def load_dict(filename_):
+    """DOC of function"""
     with open(os.path.normpath(filename_), 'rb') as f:
         ret_di = pickle.load(f)
     return ret_di
