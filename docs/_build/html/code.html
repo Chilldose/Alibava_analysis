@@ -1,0 +1,663 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>API references &mdash; AliSys 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Getting Started" href="gettingstarted.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> AliSys
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API references</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#base-analysis">Base Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#calibration">Calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#noise-analysis">Noise Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#additional-analysis-classes">Additional Analysis Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#langau">Langau</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#charge-sharing">Charge Sharing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#charge-collection-efficiency">Charge Collection Efficiency</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-analysis_classes.nb_analysis_funcs">Numba Optimized Functions</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">AliSys</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>API references</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/code.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="api-references">
+<h1>API references<a class="headerlink" href="#api-references" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="base-analysis">
+<h2>Base Analysis<a class="headerlink" href="#base-analysis" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="analysis_classes.base_analysis.BaseAnalysis">
+<em class="property">class </em><code class="descclassname">analysis_classes.base_analysis.</code><code class="descname">BaseAnalysis</code><span class="sig-paren">(</span><em>main</em>, <em>events</em>, <em>timing</em>, <em>logger=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/base_analysis.html#BaseAnalysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.base_analysis.BaseAnalysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>BaseAnalysis handles the basic clustering analysis of all passed events.
+It looks for good timing events, the timing window can be specified.</p>
+<p>Warning: BaseAnalysis benefits of multiprocessing and vectorization by the numba
+jit module. Therefore, no calculations are done in this script. For more
+information on how the different parts of the algorithm exactly are working,
+please refer to the nb_analysis_funcs.py file.</p>
+<p>That said, I will explain how in principal the algorithm is working:</p>
+<dl>
+<dt>Basic Clustering algorithm:</dt><dd><ul class="simple">
+<li><p>Before we do anything we have to subtract the pedestal from our signal.
+This will result in a (hopefully) zero’ish signal for most channels (except
+the ones which are hit).
+Otherwise we could not distinguish between signal and the baseline signal.
+Next step is to remove events which show channels with extreme high signals
+noise. This is done by simply cutting events showing signal &gt; 5*CMN*CMsig
+CMN - Common Mode Noise, CMsig - Common mode standard deviation.
+These events are dominated by common mode noise and would result in false
+positive hits.
+Whit basic garbage clean up we calculate the mean signal and std of every
+event. We will subtract the mean of all channels, to get rid of common mode
+in the event. We then build the ratio between the residual signal vs. the
+noise for EVERY channel. –&gt; We have our SN for every channel.
+This is all done in the nb_preprocess_all_events function</p></li>
+<li><p>We then are looking for a so called seed cut. Meaning we are looking for
+channels which show a higher Signal to Noise - SN as the specified one
+in the configs. Next in line we need to get rid of false polarized signals,
+which slipped our previous clean up. This is simply done by only considering
+correct polarized signals.</p></li>
+<li><p>Now the fun begins: We are taking every hit from the SN cut and look
+left and right, to find neighbouring hits which are below the SN cut.
+Therefore, we have the parameter SN_ratio, which applies a factor to the SN_cut.
+If the neighbour strips are obove this threshold it will be considered as hit too
+and will be added to the cluster. This goes on until no strips are above this threshold.
+Finally we calculate the SN for the whole cluster which in turn has to be above
+as specified value, otherwise the cluster gets rejected.
+Warning: In reality this is not trivial to do and I therefore refer to the
+dedicated function: nb_clustering</p></li>
+<li><p>Finally all data has been processed and we have finished clustering</p></li>
+</ul>
+<p>The data structure this algorithm returns you is as follows:</p>
+<dl class="simple">
+<dt>return is of type numpy.array:</dt><dd><p>[0] = processed signal: shape = (events, channels)
+[1] = SN: shape = (events, channels)
+[2] = CMN: shape = (events)
+[3] = CMsig: shape = (events)
+[4] = Hitmap: shape = (events, channels)
+[5] = Channels hit: shape = (hitted channels)
+[6] = Clusters: shape = (Channels hit shape = (channels in cluster))
+[7] = Number of Clusters: shape = (events)
+[8] = Clustersize: shape = (Channels hit: shape = (len(Clusters))
+[9] = Timing: shape = (events)</p>
+</dd>
+<dt># Base Analysis specific params</dt><dd><ul class="simple">
+<li><p>timing: [min, max] - Minimum/Maximum timing window</p></li>
+<li><p>sensor_type: “n-in-p” or “p-in-n”</p></li>
+<li><p>automasking: bool - if automasking of false polarized signals will be done</p></li>
+<li><p>SN_cut: float - SN ratio at which it is considered a hit</p></li>
+<li><p>SN_ratio: float - ratio of SN_cut to look for neighbouring hits</p></li>
+<li><p>SN_cluster: float - Minimum SN of a cluster to be considered</p></li>
+<li><p>numchan: int - Number of channels</p></li>
+<li><p>max_cluster_size: int - maximum clustersize to look for</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Written by Dominic Bloech</p>
+<dl class="method">
+<dt id="analysis_classes.base_analysis.BaseAnalysis.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/base_analysis.html#BaseAnalysis.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.base_analysis.BaseAnalysis.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does the actual event analysis and clustering in optimized python</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="calibration">
+<h2>Calibration<a class="headerlink" href="#calibration" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="analysis_classes.calibration.Calibration">
+<em class="property">class </em><code class="descclassname">analysis_classes.calibration.</code><code class="descname">Calibration</code><span class="sig-paren">(</span><em>file_path=''</em>, <em>Noise_calc=None</em>, <em>configs=None</em>, <em>logger=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/calibration.html#Calibration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.calibration.Calibration" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class handles everything concerning the calibration.</p>
+<dl class="simple">
+<dt>Charge Scan Details:</dt><dd><ul class="simple">
+<li><p>Each channel of the beetle chip is connected to a calibration
+capacitor which can inject a certain amount of charge (test pulse)
+into the channel. Each pulse generates a signal which is given in
+ADCs.</p></li>
+<li><p>The charge scan is a sequence of injected test pulses with different
+pulse hights (charge values) for each channel.</p></li>
+<li><p>The generated signal must be adjusted by subtracting the
+pedestal. Since alibava uses alternating pulses (pos/neg) in the
+course of the sequence (channel 1 –&gt;pos, channel 2 –&gt;neg, …), one
+needs to calculate the absolute difference between pedestal and
+raw signal for each channel to obtain the ‘real signal’.</p></li>
+<li><p>The gain is the conversion factor between ADCs and electrons. It is
+defined as the gradient of the signal in ADCs vs. pulse height
+characteristic for each channel.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="analysis_classes.calibration.Calibration.charge_calibration_calc">
+<code class="descname">charge_calibration_calc</code><span class="sig-paren">(</span><em>charge_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/calibration.html#Calibration.charge_calibration_calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.calibration.Calibration.charge_calibration_calc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Analyze the calibration scan and calculate conversion parameters
+for converting ADC Signals to e Signals</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="analysis_classes.calibration.Calibration.convert_ADC_to_e">
+<code class="descname">convert_ADC_to_e</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/calibration.html#Calibration.convert_ADC_to_e"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.calibration.Calibration.convert_ADC_to_e" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an array of ADC signals to electron signal</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="analysis_classes.calibration.Calibration.delay_calibration_calc">
+<code class="descname">delay_calibration_calc</code><span class="sig-paren">(</span><em>delay_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/calibration.html#Calibration.delay_calibration_calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.calibration.Calibration.delay_calibration_calc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Analyzes delay scan</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="analysis_classes.calibration.Calibration.gain_calc">
+<code class="descname">gain_calc</code><span class="sig-paren">(</span><em>cut=1.5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/calibration.html#Calibration.gain_calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.calibration.Calibration.gain_calc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the gain per channel per pulse. Ignores values for
+pulses below ‘cut’. Beetle chip is not sensitive enough for low test
+pulse values</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="analysis_classes.calibration.Calibration.use_predefined_cal_params">
+<code class="descname">use_predefined_cal_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/calibration.html#Calibration.use_predefined_cal_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.calibration.Calibration.use_predefined_cal_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses the predefined calibration parameters from the calibration file</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="noise-analysis">
+<h2>Noise Analysis<a class="headerlink" href="#noise-analysis" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="analysis_classes.noise_analysis.NoiseAnalysis">
+<em class="property">class </em><code class="descclassname">analysis_classes.noise_analysis.</code><code class="descname">NoiseAnalysis</code><span class="sig-paren">(</span><em>path=''</em>, <em>configs=None</em>, <em>logger=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/noise_analysis.html#NoiseAnalysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.noise_analysis.NoiseAnalysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class contains all calculations and data concerning pedestals in
+ALIBAVA files</p>
+<dl class="method">
+<dt id="analysis_classes.noise_analysis.NoiseAnalysis.detect_noisy_strips">
+<code class="descname">detect_noisy_strips</code><span class="sig-paren">(</span><em>Noise</em>, <em>Noise_cut</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/noise_analysis.html#NoiseAnalysis.detect_noisy_strips"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.noise_analysis.NoiseAnalysis.detect_noisy_strips" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect noisy strips (Noise &gt; self.median_noise + Noise_cut) and
+includes the masking given by the user.
+Returns: noisy strips (np.array), good strips (np.array)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="analysis_classes.noise_analysis.NoiseAnalysis.mask_alibava_chips">
+<code class="descname">mask_alibava_chips</code><span class="sig-paren">(</span><em>chips_to_keep=(1</em>, <em>2)</em>, <em>max_channels=256</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/noise_analysis.html#NoiseAnalysis.mask_alibava_chips"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.noise_analysis.NoiseAnalysis.mask_alibava_chips" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines which chips should be considered</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="analysis_classes.noise_analysis.NoiseAnalysis.noise_calc">
+<code class="descname">noise_calc</code><span class="sig-paren">(</span><em>events</em>, <em>pedestal</em>, <em>numevents</em>, <em>numchannels</em>, <em>tot_noise=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/noise_analysis.html#NoiseAnalysis.noise_calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.noise_analysis.NoiseAnalysis.noise_calc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Noise calculation of normal noise (NN) and common mode noise (CMN).
+Uses numpy, can be further optimized by reducing memory access to member variables.
+But got 36k events per second.
+So fuck it.
+This function is not numba optimized!!!</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="additional-analysis-classes">
+<h2>Additional Analysis Classes<a class="headerlink" href="#additional-analysis-classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="langau">
+<h3>Langau<a class="headerlink" href="#langau" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="analysis_classes.langau.Langau">
+<em class="property">class </em><code class="descclassname">analysis_classes.langau.</code><code class="descname">Langau</code><span class="sig-paren">(</span><em>main_analysis</em>, <em>configs</em>, <em>logger=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/langau.html#Langau"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.langau.Langau" title="Permalink to this definition">¶</a></dt>
+<dd><p>Langau calculates the Landau-Gauss convolution for the energy deposition in sensors.</p>
+<dl>
+<dt>How does it work:</dt><dd><blockquote>
+<div><ul class="simple">
+<li><p>First get the events with the desired number of clusters per event</p></li>
+<li><p>Next add from every cluster the energy together and put it in a histogram</p></li>
+</ul>
+<p>In this analysis you have several options of getting more data out or constrain it
+You have the chance to get the the seed cut langau, where only seed cut hits are considered.
+For the overall langau you have the possibility to restrain which  clustersizes you want to consider
+See the possible parameters to pass!!!</p>
+</div></blockquote>
+<dl class="simple">
+<dt># Langau Analysis specific params</dt><dd><ul class="simple">
+<li><p>clustersize: list[int] - List of clustersizes the langau should be calculated of ([1,2,3])</p></li>
+<li><p>seed_cut_langau: bool - Whether or not to calculate the seed cut langau (True)</p></li>
+<li><p>fitLangau: bool - Try to fit a Langau to data or not (True)</p></li>
+<li><p>energyCutOff: int - High energy cut of for calculations (100 000)</p></li>
+<li><p>numClus: int - How many clusters per event should be considered (1)</p></li>
+<li><p>bins: int - Bin count for langau (200)</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Written by Dominic Bloech</p>
+<dl class="method">
+<dt id="analysis_classes.langau.Langau.calc_hist_errors">
+<code class="descname">calc_hist_errors</code><span class="sig-paren">(</span><em>x</em>, <em>errors</em>, <em>bins</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/langau.html#Langau.calc_hist_errors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.langau.Langau.calc_hist_errors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the errors for the bins in a histogram if error of simple point is known</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="analysis_classes.langau.Langau.cluster_analysis">
+<code class="descname">cluster_analysis</code><span class="sig-paren">(</span><em>valid_events_Signal</em>, <em>valid_events_clusters</em>, <em>valid_events_clustersize</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/langau.html#Langau.cluster_analysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.langau.Langau.cluster_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the energies for different cluster sizes
+(like a Langau per clustersize) - non optimized version</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="analysis_classes.langau.Langau.fit_langau">
+<code class="descname">fit_langau</code><span class="sig-paren">(</span><em>x</em>, <em>errors=array([]</em>, <em>dtype=float64)</em>, <em>bins=500</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/langau.html#Langau.fit_langau"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.langau.Langau.fit_langau" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fits the langau to data</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="analysis_classes.langau.Langau.get_num_clusters">
+<code class="descname">get_num_clusters</code><span class="sig-paren">(</span><em>data</em>, <em>num_cluster</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/langau.html#Langau.get_num_clusters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.langau.Langau.get_num_clusters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all clusters which seem important- Here custers with numclus will be returned
+:param data: data file which should be searched
+:param num_cluster: number of cluster which should be considered. 0 makes no sense
+:return: list of data indizes after cluster consideration (so basically eventnumbers which are good)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="analysis_classes.langau.Langau.langau_cluster">
+<code class="descname">langau_cluster</code><span class="sig-paren">(</span><em>cls_ind</em>, <em>valid_events_Signal</em>, <em>valid_events_clusters</em>, <em>charge_cal</em>, <em>noise</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/langau.html#Langau.langau_cluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.langau.Langau.langau_cluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the energy of events, clustersize independently</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="analysis_classes.langau.Langau.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/langau.html#Langau.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.langau.Langau.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the routines to generate all langau specific data</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="charge-sharing">
+<h3>Charge Sharing<a class="headerlink" href="#charge-sharing" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="analysis_classes.chargesharing.ChargeSharing">
+<em class="property">class </em><code class="descclassname">analysis_classes.chargesharing.</code><code class="descname">ChargeSharing</code><span class="sig-paren">(</span><em>main_analysis</em>, <em>configs</em>, <em>logger=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/chargesharing.html#ChargeSharing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.chargesharing.ChargeSharing" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class calculating the charge sharing between two strip clusters.</p>
+<p>This is particularity usefull to see if the charge is correctly shared between strips.
+For more infos how to interpret these please look for good papers =).-</p>
+<dl class="simple">
+<dt>How does it work:</dt><dd><ul class="simple">
+<li><p>First you find all clusters of size 2.</p></li>
+<li><p>Order them: Left to right channel</p></li>
+<li><p>Convert ADC to electrons</p></li>
+<li><p>Calculate the eta and theta distribution: eta = ar / (al + ar) and theta = np.arctan(ar / al)
+Eta is in my opinion not as good as the theta since eta is a projection on a plane and theta a
+projection in polar coordinates. The distribution looks in most cases better and is way more easy to interpret.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="analysis_classes.chargesharing.ChargeSharing.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/chargesharing.html#ChargeSharing.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.chargesharing.ChargeSharing.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the analysis</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="charge-collection-efficiency">
+<h3>Charge Collection Efficiency<a class="headerlink" href="#charge-collection-efficiency" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="analysis_classes.cce.CCE">
+<em class="property">class </em><code class="descclassname">analysis_classes.cce.</code><code class="descname">CCE</code><span class="sig-paren">(</span><em>main_analysis</em>, <em>logger=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/cce.html#CCE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.cce.CCE" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function has actually plots the the CCE plot</p>
+<dl class="method">
+<dt id="analysis_classes.cce.CCE.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/cce.html#CCE.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.cce.CCE.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the CCE</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-analysis_classes.nb_analysis_funcs">
+<span id="numba-optimized-functions"></span><h2>Numba Optimized Functions<a class="headerlink" href="#module-analysis_classes.nb_analysis_funcs" title="Permalink to this headline">¶</a></h2>
+<p>These functions are speed optimized functions which can be used for a large variety
+of cases. They use the numba jit functionality to gain speed ups of O(50-60)
+compared to native Python/numpy. For more information see the Numba documentation on
+<a class="reference external" href="https://http://numba.pydata.org/">Numba</a></p>
+<dl class="function">
+<dt id="analysis_classes.nb_analysis_funcs.event_process_function">
+<code class="descclassname">analysis_classes.nb_analysis_funcs.</code><code class="descname">event_process_function</code><span class="sig-paren">(</span><em>events</em>, <em>pedestal</em>, <em>meanCMN</em>, <em>meanCMsig</em>, <em>noise</em>, <em>numchan</em>, <em>SN_cut</em>, <em>SN_ratio</em>, <em>SN_cluster</em>, <em>max_clustersize</em>, <em>masking</em>, <em>material</em>, <em>noisy_strips</em>, <em>event_timings</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/nb_analysis_funcs.html#event_process_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.nb_analysis_funcs.event_process_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function simply handles the preprocessing of all events, like garbage clean up and then clustering
+:param events:
+:param pedestal:
+:param meanCMN:
+:param meanCMsig:
+:param noise:
+:param numchan:
+:param SN_cut:
+:param SN_ratio:
+:param SN_cluster:
+:param max_clustersize:
+:param masking:
+:param material:
+:param noisy_strips:
+:param event_timings:
+:return:</p>
+<p>Written by Dominic Bloech</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis_classes.nb_analysis_funcs.event_process_function_multithread">
+<code class="descclassname">analysis_classes.nb_analysis_funcs.</code><code class="descname">event_process_function_multithread</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/nb_analysis_funcs.html#event_process_function_multithread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.nb_analysis_funcs.event_process_function_multithread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Just a small wrapper foe the multiprocessing function</p>
+<p>Written by Dominic Bloech</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="analysis_classes.nb_analysis_funcs.nb_clustering">
+<code class="descclassname">analysis_classes.nb_analysis_funcs.</code><code class="descname">nb_clustering</code><a class="reference internal" href="_modules/analysis_classes/nb_analysis_funcs.html#nb_clustering"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.nb_analysis_funcs.nb_clustering" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tries to find clusters in the event:
+It uses the three-cut algorithm: 1) Apply seed cut</p>
+<blockquote>
+<div><ol class="arabic simple" start="2">
+<li><p>Search for neighbouring channels above the SN_ratio</p></li>
+<li><p>Check if cluster has higher SN as specified</p></li>
+</ol>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> – The event: shape = (channels)</p></li>
+<li><p><strong>SN</strong> – The SN: shape = (channels)</p></li>
+<li><p><strong>noise</strong> – The noise: shape = (channels)</p></li>
+<li><p><strong>SN_cut</strong> – float</p></li>
+<li><p><strong>SN_ratio</strong> – float</p></li>
+<li><p><strong>SN_cluster</strong> – float</p></li>
+<li><p><strong>numchan</strong> – Number of channels</p></li>
+<li><p><strong>max_clustersize</strong> – Maximum cluster size</p></li>
+<li><p><strong>masking</strong> – Bool, if you want masking of channels with false polarity</p></li>
+<li><p><strong>material</strong> – The base material of the sensor, needed for polarity check</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+<p>Written by Dominic Bloech</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis_classes.nb_analysis_funcs.nb_noise_calc">
+<code class="descclassname">analysis_classes.nb_analysis_funcs.</code><code class="descname">nb_noise_calc</code><span class="sig-paren">(</span><em>events</em>, <em>pedestal</em>, <em>tot_noise=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/nb_analysis_funcs.html#nb_noise_calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.nb_analysis_funcs.nb_noise_calc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Noise calculation, normal noise (NN) and common mode noise (CMN)
+Uses numpy black magic
+:param events: the events
+:param pedestal: the pedestal
+:param tot_noise: bool if you want the tot_noise
+:return:</p>
+<p>Written by Dominic Bloech</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis_classes.nb_analysis_funcs.nb_preprocess_all_events">
+<code class="descclassname">analysis_classes.nb_analysis_funcs.</code><code class="descname">nb_preprocess_all_events</code><span class="sig-paren">(</span><em>events</em>, <em>pedestal</em>, <em>meanCMN</em>, <em>meanCMsig</em>, <em>noise</em>, <em>numchan</em>, <em>noisy_strips</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/nb_analysis_funcs.html#nb_preprocess_all_events"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.nb_analysis_funcs.nb_preprocess_all_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preprocesses all events and makes some clean-up on the signals.
+It calculates the SN for every events per channel and the CMN, CMNsig for every event.
+Furthermore it will return you the pure signal without pedestal, CMN etc.</p>
+<dl class="simple">
+<dt>Warning: This function uses numpy black magic, if you are confused how a calculate things here,</dt><dd><p>Please read a good introduction to numpy array operations =). But simply put I apply an
+operation usually to a whole array divisions are such a things. Every value in both
+arrays will be divided separately etc.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>events</strong> – All events shape = (events, channels)</p></li>
+<li><p><strong>pedestal</strong> – The pedestal: shape = (channels)</p></li>
+<li><p><strong>meanCMN</strong> – The mean CMN</p></li>
+<li><p><strong>meanCMsig</strong> – The mean CMNsig</p></li>
+<li><p><strong>noise</strong> – The noise per channel: shape = (channels)</p></li>
+<li><p><strong>numchan</strong> – The number of channels</p></li>
+<li><p><strong>noisy_strips</strong> – The noisy strips: shape = (channels)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>corrsignal - signal without the garbage: shape = (events, channels)
+SN - Signal to noise: shape = (events)
+CMN - Common mode for every event: shape = (events)
+CMsig - Common mode std for every event: shape = (events)</p>
+</dd>
+</dl>
+<p>Written by Dominic Bloech</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="analysis_classes.nb_analysis_funcs.nb_process_cluster_size">
+<code class="descclassname">analysis_classes.nb_analysis_funcs.</code><code class="descname">nb_process_cluster_size</code><a class="reference internal" href="_modules/analysis_classes/nb_analysis_funcs.html#nb_process_cluster_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.nb_analysis_funcs.nb_process_cluster_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the events with the different clustersizes its the numba optimized version</p>
+<p>Written by Dominic Bloech</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis_classes.nb_analysis_funcs.parallel_event_processing">
+<code class="descclassname">analysis_classes.nb_analysis_funcs.</code><code class="descname">parallel_event_processing</code><span class="sig-paren">(</span><em>goodtiming</em>, <em>timings</em>, <em>events</em>, <em>pedestal</em>, <em>meanCMN</em>, <em>meanCMsig</em>, <em>noise</em>, <em>numchan</em>, <em>SN_cut</em>, <em>SN_ratio</em>, <em>SN_cluster</em>, <em>max_clustersize=5</em>, <em>masking=True</em>, <em>material=1</em>, <em>poolsize=1</em>, <em>Pool=None</em>, <em>noisy_strips=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_classes/nb_analysis_funcs.html#parallel_event_processing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_classes.nb_analysis_funcs.parallel_event_processing" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function handles all logic to distribute the event processing and clustering to several cores
+to speed up the calculations. It does not do anything complicated.
+:param goodtiming: Array containing the indizes of evetns with good timing
+:param events: Array of all events: shape = (events, channels)
+:param pedestal: The pedestal: shape = (channels)
+:param meanCMN: A single value with the mean CMN of all events per channels
+:param meanCMsig: Same thing as meanCMN only the std
+:param noise: The noise of every channels: shape = (channels)
+:param numchan: Number of channels
+:param SN_cut: The SN_cut from the config
+:param SN_ratio: The SN_ratio from the config
+:param SN_cluster: The SN_cluster from the config
+:param max_clustersize: Maximum
+:param masking: A boolean of automatic masking should be applied
+:param material: Which base material the sensor is. This is needed for the signal polarity
+:param poolsize: Poolsize of the multiprocessing
+:param Pool: The actual muzltiprocessing pool
+:param noisy_strips: All noisy/masked strips from the user
+:return: The processed data</p>
+<p>Written by Dominic Bloech</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="gettingstarted.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Dominic Bloech
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

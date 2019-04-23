@@ -1,0 +1,398 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>analysis_classes.calibration &mdash; AliSys 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> AliSys
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../MainAnalysis.html">The Main Analyis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../AdditionalAnalysis.html">Additional Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Plotting.html">Plotting</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../code.html">API references</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">AliSys</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>analysis_classes.calibration</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for analysis_classes.calibration</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This file contains the class for the ALiBaVa calibration&quot;&quot;&quot;</span>
+<span class="c1">#pylint: disable=C0103,C0301,R0913,R0902</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="k">import</span> <span class="n">CubicSpline</span>
+<span class="kn">from</span> <span class="nn">.utilities</span> <span class="k">import</span> <span class="n">read_binary_Alibava</span><span class="p">,</span> <span class="n">import_h5</span>
+
+<div class="viewcode-block" id="Calibration"><a class="viewcode-back" href="../../code.html#analysis_classes.calibration.Calibration">[docs]</a><span class="k">class</span> <span class="nc">Calibration</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;This class handles everything concerning the calibration.</span>
+
+<span class="sd">    Charge Scan Details:</span>
+<span class="sd">        - Each channel of the beetle chip is connected to a calibration</span>
+<span class="sd">          capacitor which can inject a certain amount of charge (test pulse)</span>
+<span class="sd">          into the channel. Each pulse generates a signal which is given in</span>
+<span class="sd">          ADCs.</span>
+<span class="sd">        - The charge scan is a sequence of injected test pulses with different</span>
+<span class="sd">          pulse hights (charge values) for each channel.</span>
+<span class="sd">        - The generated signal must be adjusted by subtracting the</span>
+<span class="sd">          pedestal. Since alibava uses alternating pulses (pos/neg) in the</span>
+<span class="sd">          course of the sequence (channel 1 --&gt;pos, channel 2 --&gt;neg, ...), one</span>
+<span class="sd">          needs to calculate the absolute difference between pedestal and</span>
+<span class="sd">          raw signal for each channel to obtain the &#39;real signal&#39;.</span>
+<span class="sd">        - The gain is the conversion factor between ADCs and electrons. It is</span>
+<span class="sd">          defined as the gradient of the signal in ADCs vs. pulse height</span>
+<span class="sd">          characteristic for each channel.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">Noise_calc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">configs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param delay_path: Path to calibration file</span>
+<span class="sd">        :param charge_path: Path to calibration file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">logger</span> <span class="ow">or</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+        <span class="c1"># self.charge_cal = None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delay_cal</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delay_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charge_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pedestal</span> <span class="o">=</span> <span class="n">Noise_calc</span><span class="o">.</span><span class="n">pedestal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noisy_channels</span> <span class="o">=</span> <span class="n">Noise_calc</span><span class="o">.</span><span class="n">noisy_strips</span>
+        <span class="c1"># self.CMN = np.std(Noise_calc.CMnoise)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coeff_per_ch</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_sig_all_ch</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># mean signal per pulse over all channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gains_per_pulse</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># list of injected test pulses</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meancoeff</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Mean coefficient out of all calibrations curves</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meansig_charge</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># mean signal per channel per pulse</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charge_sig</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Standard deviation of all charge calibartions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delay_cal</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meansig_delay</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># mean per pulse per channel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isBinary</span> <span class="o">=</span> <span class="n">configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;isBinary&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ADC_sig</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configs</span> <span class="o">=</span> <span class="n">configs</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">configs</span><span class="p">[</span><span class="s2">&quot;use_charge_cal&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delay_calibration_calc</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">file_path</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">use_predefined_cal_params</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">charge_calibration_calc</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Calibration.use_predefined_cal_params"><a class="viewcode-back" href="../../code.html#analysis_classes.calibration.Calibration.use_predefined_cal_params">[docs]</a>    <span class="k">def</span> <span class="nf">use_predefined_cal_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Uses the predefined calibration parameters from the calibration file&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using predefined gain parameters: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">configs</span><span class="p">[</span><span class="s2">&quot;Gain_params&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meancoeff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configs</span><span class="p">[</span><span class="s2">&quot;Gain_params&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ADC_sig</span> <span class="o">=</span> <span class="mf">1.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charge_sig</span> <span class="o">=</span> <span class="mf">1.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chargecoeff</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configs</span><span class="p">[</span><span class="s2">&quot;Gain_params&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">256</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gain_calc</span><span class="p">()</span></div>
+        <span class="c1"># So every strip has the same gain</span>
+
+
+<div class="viewcode-block" id="Calibration.delay_calibration_calc"><a class="viewcode-back" href="../../code.html#analysis_classes.calibration.Calibration.delay_calibration_calc">[docs]</a>    <span class="k">def</span> <span class="nf">delay_calibration_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delay_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Analyzes delay scan&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading delay file: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">delay_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isBinary</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delay_data</span> <span class="o">=</span> <span class="n">import_h5</span><span class="p">(</span><span class="n">delay_path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delay_data</span> <span class="o">=</span> <span class="n">read_binary_Alibava</span><span class="p">(</span><span class="n">delay_path</span><span class="p">)</span>
+
+        <span class="n">pulses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delay_data</span><span class="p">[</span><span class="s2">&quot;scan&quot;</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">][:])</span>  <span class="c1"># aka xdata</span>
+
+        <span class="c1"># Sometime it happens, that h5py does not read correctly</span>
+        <span class="c1"># TODO: write a more pythonic and pretty version of this</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">pulses</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;A HDF5 read error! Loaded empty array. Restart python&quot;</span><span class="p">)</span>
+
+        <span class="n">signals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delay_data</span><span class="p">[</span><span class="s2">&quot;events&quot;</span><span class="p">][</span><span class="s2">&quot;signal&quot;</span><span class="p">][:])</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">pedestal</span>  <span class="c1"># signals per pulse, CMN is a single value</span>
+        <span class="n">signals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">signals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">noisy_channels</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">sigppulse</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">signals</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">pulses</span><span class="p">))</span>  <span class="c1"># How many signals per pulses</span>
+
+        <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sigppulse</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">signals</span><span class="p">)</span> <span class="o">+</span> <span class="n">sigppulse</span><span class="p">,</span> <span class="n">sigppulse</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">meansig_delay</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">signals</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">i</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">i</span>
+
+        <span class="c1"># Interpolate and get some extrapolation data from polynomial fit (from alibava)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meansig_delay</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meansig_delay</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delay_cal</span> <span class="o">=</span> <span class="n">CubicSpline</span><span class="p">(</span><span class="n">pulses</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">meansig_delay</span><span class="p">)</span></div>
+        <span class="c1"># print(&quot;Coefficients of charge fit: {!s}&quot;.format(self.chargecoeff))</span>
+
+<div class="viewcode-block" id="Calibration.charge_calibration_calc"><a class="viewcode-back" href="../../code.html#analysis_classes.calibration.Calibration.charge_calibration_calc">[docs]</a>    <span class="k">def</span> <span class="nf">charge_calibration_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">charge_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Analyze the calibration scan and calculate conversion parameters</span>
+<span class="sd">        for converting ADC Signals to e Signals&quot;&quot;&quot;</span>
+        <span class="c1"># Charge scan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading charge calibration file: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">charge_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isBinary</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">charge_data</span> <span class="o">=</span> <span class="n">import_h5</span><span class="p">(</span><span class="n">charge_path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">charge_data</span> <span class="o">=</span> <span class="n">read_binary_Alibava</span><span class="p">(</span><span class="n">charge_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">charge_data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unable to read the calibration file...&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># list of injected test pulse values aka x-data</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">charge_data</span><span class="p">[</span><span class="s2">&quot;scan&quot;</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">][:])</span>
+
+            <span class="c1"># Sometime it happens, that h5py does not read correctly</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;A HDF5 read error! Loaded empty array. &quot;</span>
+                               <span class="s2">&quot;Restart python&quot;</span><span class="p">)</span>
+
+            <span class="c1"># signals per pulse subtracted by pedestals and excluding noisy channels</span>
+            <span class="n">signals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">charge_data</span><span class="p">[</span><span class="s2">&quot;events&quot;</span><span class="p">][</span><span class="s2">&quot;signal&quot;</span><span class="p">][:])</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">pedestal</span>
+            <span class="n">signals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">signals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">noisy_channels</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="c1"># Calculate size of pulse group to obtain number of injected signals per pulse step</span>
+            <span class="n">sigppulse</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">signals</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">))</span>
+
+            <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="c1"># summerize signals of each pulse group by calculating the mean</span>
+            <span class="c1"># signals of each pulse group per channel</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sigppulse</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">signals</span><span class="p">)</span> <span class="o">+</span> <span class="n">sigppulse</span><span class="p">,</span> <span class="n">sigppulse</span><span class="p">):</span>
+                <span class="n">raw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">signals</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">i</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">meansig_charge</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="c1"># For a pulse height of 0 one often finds non-zero values in meansig_charge</span>
+            <span class="c1"># Use signals of 0 pulse as offset values and adjust rest accordingly</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meansig_charge</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">meansig_charge</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meansig_charge</span> <span class="o">-</span> <span class="n">offset</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">pul</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meansig_charge</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pul</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">val</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">meansig_charge</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Charge offset is greater then 5 ADC! This &quot;</span>
+                                 <span class="s2">&quot;may be a result of bad calibration!&quot;</span><span class="p">)</span>
+
+            <span class="c1"># transpose matrix from signal per channel per pulse to signal per pulse per channel</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meansig_charge</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mean_sig_all_ch</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meansig_charge</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="c1"># for sig_per_pulse in data:</span>
+                <span class="c1"># Since you want to convert ADC to e, you need to fit eSignal(ADCSignal)</span>
+                <span class="c1"># self.coeff_per_ch.append(np.polyfit(</span>
+                <span class="c1">#     sig_per_pulse, self.pulses, deg=5, full=False))</span>
+            <span class="c1"># only consider signals that are larger than zero to improve fit in sensitive region</span>
+            <span class="n">fit_params</span> <span class="o">=</span> <span class="p">[(</span><span class="n">sig</span><span class="p">,</span> <span class="n">pul</span><span class="p">)</span> <span class="k">for</span> <span class="n">sig</span><span class="p">,</span> <span class="n">pul</span> <span class="ow">in</span> \
+                <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_sig_all_ch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">)</span> <span class="k">if</span> <span class="n">sig</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">meancoeff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">([</span><span class="n">tup</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">fit_params</span><span class="p">],</span>
+                                        <span class="p">[</span><span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">fit_params</span><span class="p">],</span>
+                                        <span class="n">deg</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Mean fit coefficients over all channels: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                          <span class="bp">self</span><span class="o">.</span><span class="n">meancoeff</span><span class="p">)</span></div>
+            <span class="c1"># self.coeff_test(data)</span>
+
+<div class="viewcode-block" id="Calibration.convert_ADC_to_e"><a class="viewcode-back" href="../../code.html#analysis_classes.calibration.Calibration.convert_ADC_to_e">[docs]</a>    <span class="k">def</span> <span class="nf">convert_ADC_to_e</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert an array of ADC signals to electron signal&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">polyval</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meancoeff</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Calibration.gain_calc"><a class="viewcode-back" href="../../code.html#analysis_classes.calibration.Calibration.gain_calc">[docs]</a>    <span class="k">def</span> <span class="nf">gain_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="mf">1.5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculates the gain per channel per pulse. Ignores values for</span>
+<span class="sd">        pulses below &#39;cut&#39;. Beetle chip is not sensitive enough for low test</span>
+<span class="sd">        pulse values&quot;&quot;&quot;</span>
+        <span class="c1"># calculate gain of test pulses and prevent &#39;dividing by 0&#39; warning</span>
+        <span class="k">for</span> <span class="n">adc_all_ch</span><span class="p">,</span> <span class="n">pulse</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meansig_charge</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gains_per_pulse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">pulse</span><span class="o">/</span><span class="n">adc</span> <span class="k">if</span> <span class="n">adc</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">adc</span> <span class="ow">in</span> <span class="n">adc_all_ch</span><span class="p">])</span>
+        <span class="n">gain_lst</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># concatenate gain lists</span>
+        <span class="k">for</span> <span class="n">gain_ch</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gains_per_pulse</span><span class="p">:</span>
+            <span class="n">gain_lst</span> <span class="o">+=</span> <span class="n">gain_ch</span>
+        <span class="n">init_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gain_lst</span><span class="p">)</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">gain_lst</span><span class="p">)</span>
+        <span class="c1"># exclude zeros and gains that are too large</span>
+        <span class="n">gain_lst</span> <span class="o">=</span> <span class="p">[</span><span class="n">gain</span> <span class="k">for</span> <span class="n">gain</span> <span class="ow">in</span> <span class="n">gain_lst</span> <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">gain</span> <span class="o">&lt;</span> <span class="n">cut</span><span class="o">*</span><span class="n">mean</span><span class="p">]</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">gain_lst</span><span class="p">)</span>
+        <span class="n">ex_ratio</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">gain_lst</span><span class="p">)</span><span class="o">/</span><span class="n">init_len</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">gain_lst</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">ex_ratio</span></div></div>
+
+    <span class="c1"># def coeff_test(data):</span>
+    <span class="c1">#     &quot;&quot;&quot;Tests fit coefficients vs. signals generated by pulses. Compares mean</span>
+    <span class="c1">#     vs. per channel coefficients.</span>
+    <span class="c1">#     Args:</span>
+    <span class="c1">#         - data (2D numpy array): signals per pulse per channel</span>
+    <span class="c1">#         - pulses (numpy array): list of all test pulse values, e.g.</span>
+    <span class="c1">#                                 pulses[10] = 10240,</span>
+    <span class="c1">#                                 pulses[20] = 20480,</span>
+    <span class="c1">#                                 pulses[30] = 30720, ...</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     pass</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Dominic Bloech
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,295 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>analysis_classes.chargesharing &mdash; AliSys 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> AliSys
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../MainAnalysis.html">The Main Analyis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../AdditionalAnalysis.html">Additional Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Plotting.html">Plotting</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../code.html">API references</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">AliSys</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>analysis_classes.chargesharing</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for analysis_classes.chargesharing</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This file contains the class for charge sharing analysis&quot;&quot;&quot;</span>
+<span class="c1">#pylint: disable=C0103,E1111</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="k">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">norm</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">.utilities</span> <span class="k">import</span> <span class="n">set_attributes</span>
+
+
+<div class="viewcode-block" id="ChargeSharing"><a class="viewcode-back" href="../../code.html#analysis_classes.chargesharing.ChargeSharing">[docs]</a><span class="k">class</span> <span class="nc">ChargeSharing</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; A class calculating the charge sharing between two strip clusters.</span>
+
+<span class="sd">    This is particularity usefull to see if the charge is correctly shared between strips.</span>
+<span class="sd">    For more infos how to interpret these please look for good papers =).-</span>
+
+<span class="sd">    How does it work:</span>
+<span class="sd">        - First you find all clusters of size 2.</span>
+<span class="sd">        - Order them: Left to right channel</span>
+<span class="sd">        - Convert ADC to electrons</span>
+<span class="sd">        - Calculate the eta and theta distribution: eta = ar / (al + ar) and theta = np.arctan(ar / al)</span>
+<span class="sd">          Eta is in my opinion not as good as the theta since eta is a projection on a plane and theta a</span>
+<span class="sd">          projection in polar coordinates. The distribution looks in most cases better and is way more easy to interpret.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">main_analysis</span><span class="p">,</span> <span class="n">configs</span><span class="p">,</span> <span class="n">logger</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize some important parameters&quot;&quot;&quot;</span>
+
+        <span class="c1"># Makes the entries of the dict to member object of the class</span>
+        <span class="n">set_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">logger</span> <span class="ow">or</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">main</span> <span class="o">=</span> <span class="n">main_analysis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clustersize</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># Other thing would not make sense for interstrip analysis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">outputdata</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_dict</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Containing all data processed</span>
+
+<div class="viewcode-block" id="ChargeSharing.run"><a class="viewcode-back" href="../../code.html#analysis_classes.chargesharing.ChargeSharing.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Runs the analysis&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Get clustersizes of 2 and only events which show only one cluster in its data (just to be sure</span>
+
+        <span class="c1"># Indizes of events with the desired clusternumbers</span>
+        <span class="n">indizes_clusters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;base&quot;</span><span class="p">][</span><span class="s2">&quot;Numclus&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Take the desired clusters</span>
+        <span class="n">clusters_raw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;base&quot;</span><span class="p">][</span><span class="s2">&quot;Clustersize&quot;</span><span class="p">],</span> <span class="n">indizes_clusters</span><span class="p">)</span>
+        <span class="n">clusters_flattend</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">clusters_raw</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>  <span class="c1"># so that they are easy accessible</span>
+        <span class="c1"># Now take only the events with clustersize 2</span>
+        <span class="n">indizes_clustersize</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">clusters_flattend</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># Here we need to do a little detour, since we have derived indizes from Clustersize we do not have the same</span>
+        <span class="c1"># Index order as we need, therefore we need to get indizes from indizes_clusters to get the indizes</span>
+        <span class="c1"># from the real data</span>
+        <span class="n">indizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">indizes_clusters</span><span class="p">,</span> <span class="n">indizes_clustersize</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Data containing the al and ar values as list entries data[0] --&gt; al</span>
+        <span class="c1"># Take the data from the Signal data</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;base&quot;</span><span class="p">][</span><span class="s2">&quot;Signal&quot;</span><span class="p">],</span> <span class="n">indizes</span><span class="p">)</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">raw</span><span class="p">),</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">raw</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">numchan</span><span class="p">))</span>
+        <span class="c1"># Find the channels with the hits</span>
+        <span class="n">hits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;base&quot;</span><span class="p">][</span><span class="s2">&quot;Clusters&quot;</span><span class="p">],</span> <span class="n">indizes</span><span class="p">))</span>
+        <span class="n">al</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">indizes</span><span class="p">))</span>  <span class="c1"># Amplitude left and right</span>
+        <span class="n">ar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">indizes</span><span class="p">))</span>
+        <span class="c1"># Order the hits assecnding (they are channel numbers)</span>
+        <span class="n">il</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">hits</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># Indizes of left and right</span>
+        <span class="n">ir</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">hits</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># final_data = np.zeros((len(indizes), 2))</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">ali</span><span class="p">,</span> <span class="n">ari</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">al</span><span class="p">)),</span> <span class="n">raw</span><span class="p">,</span> <span class="n">al</span><span class="p">,</span> <span class="n">ar</span><span class="p">,</span> <span class="n">il</span><span class="p">,</span> <span class="n">ir</span><span class="p">):</span>
+            <span class="n">al</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="n">l</span><span class="p">]</span>  <span class="c1"># So always the left strip is choosen</span>
+            <span class="n">ar</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="n">r</span><span class="p">]</span>  <span class="c1"># Same with the right strip</span>
+
+        <span class="c1"># Convert ADC to actual energy</span>
+        <span class="n">al</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">convert_ADC_to_e</span><span class="p">(</span><span class="n">al</span><span class="p">)</span>
+        <span class="n">ar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">convert_ADC_to_e</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span>
+
+        <span class="c1"># Calculate eta and theta</span>
+        <span class="n">final_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">al</span><span class="p">,</span> <span class="n">ar</span><span class="p">])</span>
+        <span class="n">eta</span> <span class="o">=</span> <span class="n">ar</span> <span class="o">/</span> <span class="p">(</span><span class="n">al</span> <span class="o">+</span> <span class="n">ar</span><span class="p">)</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="n">ar</span> <span class="o">/</span> <span class="n">al</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the gauss distributions</span>
+        <span class="c1"># Cut the eta in two halves and fit gaussian to it</span>
+        <span class="c1"># Todo: not yet working correctly</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="mi">200</span>
+        <span class="n">etahist</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">)</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">etahist</span><span class="p">)</span>
+        <span class="n">mul</span><span class="p">,</span> <span class="n">stdl</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">etahist</span><span class="p">[:</span><span class="nb">int</span><span class="p">(</span><span class="n">length</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)])</span>
+        <span class="n">mur</span><span class="p">,</span> <span class="n">stdr</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">etahist</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">length</span> <span class="o">/</span> <span class="mi">2</span><span class="p">):])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_dict</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">final_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_dict</span><span class="p">[</span><span class="s2">&quot;eta&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">eta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_dict</span><span class="p">[</span><span class="s2">&quot;theta&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">theta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_dict</span><span class="p">[</span><span class="s2">&quot;fits&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">mul</span><span class="p">,</span> <span class="n">stdl</span><span class="p">),</span> <span class="p">(</span><span class="n">mur</span><span class="p">,</span> <span class="n">stdr</span><span class="p">),</span> <span class="n">edges</span><span class="p">,</span> <span class="n">bins</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_dict</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Dominic Bloech
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,330 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>analysis_classes.noise_analysis &mdash; AliSys 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> AliSys
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../MainAnalysis.html">The Main Analyis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../AdditionalAnalysis.html">Additional Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Plotting.html">Plotting</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../code.html">API references</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">AliSys</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>analysis_classes.noise_analysis</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for analysis_classes.noise_analysis</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Noise analysis of ALiBaVa files&quot;&quot;&quot;</span>
+<span class="c1"># pylint: disable=C0103,R0902,C0301,R0914,R0913</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">time</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="k">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">analysis_classes.nb_analysis_funcs</span> <span class="k">import</span> <span class="n">nb_noise_calc</span>
+<span class="kn">from</span> <span class="nn">analysis_classes.utilities</span> <span class="k">import</span> <span class="n">import_h5</span><span class="p">,</span> <span class="n">read_binary_Alibava</span>
+
+<div class="viewcode-block" id="NoiseAnalysis"><a class="viewcode-back" href="../../code.html#analysis_classes.noise_analysis.NoiseAnalysis">[docs]</a><span class="k">class</span> <span class="nc">NoiseAnalysis</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;This class contains all calculations and data concerning pedestals in</span>
+<span class="sd">	ALIBAVA files&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">configs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param path: Path to pedestal file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">logger</span> <span class="ow">or</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading pedestal file: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">configs</span><span class="p">[</span><span class="s2">&quot;isBinary&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">import_h5</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">read_binary_Alibava</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="c1"># Some of the declaration may seem unecessary but it clears things</span>
+            <span class="c1"># up when you need to know how big some arrays are</span>
+
+            <span class="c1"># self.data[&quot;events&quot;][&quot;signal&quot;][0] -&gt; array of signals of 0th event of all channels</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">numchan</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;events&quot;</span><span class="p">][</span><span class="s2">&quot;signal&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">numevents</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;events&quot;</span><span class="p">][</span><span class="s2">&quot;signal&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pedestal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">numchan</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">numchan</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+            <span class="c1"># Only use events with good timing, here always the case</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">noise_cut</span> <span class="o">=</span> <span class="n">configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Noise_cut&quot;</span><span class="p">,</span> <span class="mf">5.</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">which_strips</span> <span class="o">=</span> <span class="n">configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Chips&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_channels</span> <span class="o">=</span> <span class="n">configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Maximum_channels&quot;</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="n">configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Manual_mask&quot;</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goodevents</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;events&quot;</span><span class="p">][</span><span class="s2">&quot;time&quot;</span><span class="p">][:]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">CMnoise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">goodevents</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">CMsig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">goodevents</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">goodevents</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">numchan</span><span class="p">),</span>
+                                  <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">median_noise</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># Calculate pedestal</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Calculating pedestal and Noise...&quot;</span><span class="p">)</span>
+            <span class="c1"># mean signal per channel over all events</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pedestal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;events&quot;</span><span class="p">][</span><span class="s2">&quot;signal&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="c1"># complete signal matrix (event vs. channel)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;events&quot;</span><span class="p">][</span><span class="s2">&quot;signal&quot;</span><span class="p">][:],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">noise</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">CMnoise</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">CMsig</span> <span class="o">=</span> \
+                    <span class="n">nb_noise_calc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">signal</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pedestal</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">noisy_strips</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">good_strips</span> <span class="o">=</span> \
+                        <span class="bp">self</span><span class="o">.</span><span class="n">detect_noisy_strips</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">noise</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_cut</span><span class="p">)</span>
+            <span class="c1"># Mask chips of alibava</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">chip_selection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">masked_channels</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mask_alibava_chips</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">which_strips</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_channels</span><span class="p">)</span>
+            <span class="c1"># Redefine good strips and noisy strips</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">good_strips</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chip_selection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">good_strips</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">noisy_strips</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">noisy_strips</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">masked_channels</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">noise_corr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">CMnoise</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">CMsig</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_noise</span> <span class="o">=</span> \
+                        <span class="n">nb_noise_calc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">signal</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">good_strips</span><span class="p">],</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">pedestal</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">good_strips</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No valid file, skipping pedestal run&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NoiseAnalysis.mask_alibava_chips"><a class="viewcode-back" href="../../code.html#analysis_classes.noise_analysis.NoiseAnalysis.mask_alibava_chips">[docs]</a>    <span class="k">def</span> <span class="nf">mask_alibava_chips</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chips_to_keep</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">max_channels</span> <span class="o">=</span> <span class="mi">256</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Defines which chips should be considered&quot;&quot;&quot;</span>
+        <span class="n">final_channels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">chips_to_keep</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="p">(</span><span class="n">chip</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mi">128</span>
+            <span class="n">to_keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">start</span><span class="o">+</span><span class="mi">128</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+            <span class="n">final_channels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">final_channels</span><span class="p">,</span> <span class="n">to_keep</span><span class="p">)</span>
+
+        <span class="c1"># No find the masked channels</span>
+        <span class="n">channels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">max_channels</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">final_channels</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">setdiff1d</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">final_channels</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NoiseAnalysis.detect_noisy_strips"><a class="viewcode-back" href="../../code.html#analysis_classes.noise_analysis.NoiseAnalysis.detect_noisy_strips">[docs]</a>    <span class="k">def</span> <span class="nf">detect_noisy_strips</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Noise</span><span class="p">,</span> <span class="n">Noise_cut</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Detect noisy strips (Noise &gt; self.median_noise + Noise_cut) and</span>
+<span class="sd">        includes the masking given by the user.</span>
+<span class="sd">        Returns: noisy strips (np.array), good strips (np.array)&quot;&quot;&quot;</span>
+
+        <span class="n">good_strips</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Noise</span><span class="p">))</span>
+        <span class="c1"># Calculate the median noise over all channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">median_noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">Noise</span><span class="p">)</span>
+        <span class="n">high_noise_strips</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">Noise</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">median_noise</span> <span class="o">+</span> <span class="n">Noise_cut</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">high_noise_strips</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">high_noise_strips</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+        <span class="n">good_strips</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">good_strips</span><span class="p">,</span> <span class="n">high_noise_strips</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">high_noise_strips</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span> <span class="n">good_strips</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NoiseAnalysis.noise_calc"><a class="viewcode-back" href="../../code.html#analysis_classes.noise_analysis.NoiseAnalysis.noise_calc">[docs]</a>    <span class="k">def</span> <span class="nf">noise_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">pedestal</span><span class="p">,</span> <span class="n">numevents</span><span class="p">,</span>
+                   <span class="n">numchannels</span><span class="p">,</span> <span class="n">tot_noise</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Noise calculation of normal noise (NN) and common mode noise (CMN).</span>
+<span class="sd">        Uses numpy, can be further optimized by reducing memory access to member variables.</span>
+<span class="sd">        But got 36k events per second.</span>
+<span class="sd">        So fuck it.</span>
+<span class="sd">        This function is not numba optimized!!!&quot;&quot;&quot;</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">numevents</span><span class="p">,</span> <span class="n">numchannels</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">noise</span> <span class="o">=</span> <span class="n">score</span>
+        <span class="n">CMnoise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">numevents</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">CMsig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">numevents</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="c1"># Loop over all good events</span>
+        <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">goodevents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Events processed:&quot;</span><span class="p">):</span>
+            <span class="c1"># Calculate the common mode noise for every channel</span>
+            <span class="n">cm</span> <span class="o">=</span> <span class="n">events</span><span class="p">[</span><span class="n">event</span><span class="p">][:]</span> <span class="o">-</span> <span class="n">pedestal</span>  <span class="c1"># Get the signal from event and subtract pedestal</span>
+            <span class="n">CMNsig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">cm</span><span class="p">)</span>  <span class="c1"># Calculate the standard deviation</span>
+            <span class="n">CMN</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cm</span><span class="p">)</span>  <span class="c1"># Now calculate the mean from the cm to get the actual common mode noise</span>
+
+            <span class="c1"># Calculate the noise of channels</span>
+            <span class="c1"># Subtract the common mode noise --&gt; Signal[arraylike] - pedestal[arraylike] - Common mode</span>
+            <span class="n">cn</span> <span class="o">=</span> <span class="n">cm</span> <span class="o">-</span> <span class="n">CMN</span>
+            <span class="n">score</span><span class="p">[</span><span class="n">event</span><span class="p">]</span> <span class="o">=</span> <span class="n">cn</span>
+            <span class="c1"># Append the common mode values per event to the data arrays</span>
+            <span class="n">CMnoise</span><span class="p">[</span><span class="n">event</span><span class="p">]</span> <span class="o">=</span> <span class="n">CMN</span>
+            <span class="n">CMsig</span><span class="p">[</span><span class="n">event</span><span class="p">]</span> <span class="o">=</span> <span class="n">CMNsig</span>
+
+        <span class="c1"># get noise per channel from score value per channel</span>
+        <span class="n">noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">tot_noise</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">noise</span><span class="p">,</span> <span class="n">CMnoise</span><span class="p">,</span> <span class="n">CMsig</span>
+        <span class="c1"># convert score matrix into an 1-d array --&gt; np.concatenate(score, axis=0))</span>
+        <span class="k">return</span> <span class="n">noise</span><span class="p">,</span> <span class="n">CMnoise</span><span class="p">,</span> <span class="n">CMsig</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Dominic Bloech
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

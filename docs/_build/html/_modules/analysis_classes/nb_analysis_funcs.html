@@ -1,0 +1,607 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>analysis_classes.nb_analysis_funcs &mdash; AliSys 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> AliSys
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../MainAnalysis.html">The Main Analyis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../AdditionalAnalysis.html">Additional Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Plotting.html">Plotting</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../code.html">API references</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">AliSys</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>analysis_classes.nb_analysis_funcs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for analysis_classes.nb_analysis_funcs</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;These functions are speed optimized functions which can be used for a large variety</span>
+<span class="sd">of cases. They use the numba jit functionality to gain speed ups of O(50-60)</span>
+<span class="sd">compared to native Python/numpy. For more information see the Numba documentation on</span>
+<span class="sd">`Numba &lt;https://http://numba.pydata.org/&gt;`_&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">numba</span> <span class="k">import</span> <span class="n">jit</span><span class="p">,</span> <span class="n">prange</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># Some numba settings</span>
+<span class="n">gil</span> <span class="o">=</span> <span class="kc">True</span> <span class="c1"># Use gil or not</span>
+<span class="n">Fast</span> <span class="o">=</span> <span class="kc">True</span> <span class="c1"># Use fastmath</span>
+<span class="n">parallel</span> <span class="o">=</span> <span class="kc">True</span> <span class="c1"># Use parallel execution</span>
+
+<span class="n">jit</span><span class="p">(</span><span class="n">nogil</span><span class="o">=</span><span class="n">gil</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="n">Fast</span><span class="p">)</span>
+<div class="viewcode-block" id="event_process_function_multithread"><a class="viewcode-back" href="../../code.html#analysis_classes.nb_analysis_funcs.event_process_function_multithread">[docs]</a><span class="k">def</span> <span class="nf">event_process_function_multithread</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Just a small wrapper foe the multiprocessing function</span>
+
+<span class="sd">    Written by Dominic Bloech</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">events</span><span class="p">,</span> <span class="n">pedestal</span><span class="p">,</span> <span class="n">meanCMN</span><span class="p">,</span> <span class="n">meanCMsig</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">numchan</span><span class="p">,</span> <span class="n">SN_cut</span><span class="p">,</span> <span class="n">SN_ratio</span><span class="p">,</span> <span class="n">SN_cluster</span><span class="p">,</span> <span class="n">max_clustersize</span><span class="p">,</span> <span class="n">masking</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">noisy_strips</span> <span class="o">=</span> <span class="n">args</span>
+    <span class="k">return</span> <span class="n">event_process_function</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">pedestal</span><span class="p">,</span> <span class="n">meanCMN</span><span class="p">,</span> <span class="n">meanCMsig</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span>
+                           <span class="n">numchan</span><span class="p">,</span> <span class="n">SN_cut</span><span class="p">,</span> <span class="n">SN_ratio</span><span class="p">,</span> <span class="n">SN_cluster</span><span class="p">,</span> <span class="n">max_clustersize</span><span class="p">,</span>
+                           <span class="n">masking</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">noisy_strips</span><span class="p">)</span></div>
+
+<span class="n">jit</span><span class="p">(</span><span class="n">nogil</span><span class="o">=</span><span class="n">gil</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="n">parallel</span><span class="p">,</span> <span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="n">Fast</span><span class="p">)</span>
+<div class="viewcode-block" id="event_process_function"><a class="viewcode-back" href="../../code.html#analysis_classes.nb_analysis_funcs.event_process_function">[docs]</a><span class="k">def</span> <span class="nf">event_process_function</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">pedestal</span><span class="p">,</span> <span class="n">meanCMN</span><span class="p">,</span> <span class="n">meanCMsig</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span>
+                           <span class="n">numchan</span><span class="p">,</span> <span class="n">SN_cut</span><span class="p">,</span> <span class="n">SN_ratio</span><span class="p">,</span> <span class="n">SN_cluster</span><span class="p">,</span> <span class="n">max_clustersize</span><span class="p">,</span>
+                           <span class="n">masking</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">noisy_strips</span><span class="p">,</span> <span class="n">event_timings</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function simply handles the preprocessing of all events, like garbage clean up and then clustering</span>
+<span class="sd">    :param events:</span>
+<span class="sd">    :param pedestal:</span>
+<span class="sd">    :param meanCMN:</span>
+<span class="sd">    :param meanCMsig:</span>
+<span class="sd">    :param noise:</span>
+<span class="sd">    :param numchan:</span>
+<span class="sd">    :param SN_cut:</span>
+<span class="sd">    :param SN_ratio:</span>
+<span class="sd">    :param SN_cluster:</span>
+<span class="sd">    :param max_clustersize:</span>
+<span class="sd">    :param masking:</span>
+<span class="sd">    :param material:</span>
+<span class="sd">    :param noisy_strips:</span>
+<span class="sd">    :param event_timings:</span>
+<span class="sd">    :return:</span>
+
+<span class="sd">    Written by Dominic Bloech</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Generate the output array</span>
+    <span class="n">prodata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">),</span> <span class="mi">10</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">object</span><span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># Generate the hitmap</span>
+    <span class="n">hitmap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">numchan</span><span class="p">)</span>
+
+    <span class="c1"># Preprocess all events for the clustering algorithm</span>
+    <span class="n">signal</span><span class="p">,</span> <span class="n">SN</span><span class="p">,</span> <span class="n">CMN</span><span class="p">,</span> <span class="n">CMsig</span> <span class="o">=</span> <span class="n">nb_preprocess_all_events</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">pedestal</span><span class="p">,</span> <span class="n">meanCMN</span><span class="p">,</span>
+                                                   <span class="n">meanCMsig</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">numchan</span><span class="p">,</span> <span class="n">noisy_strips</span><span class="p">)</span>
+
+    <span class="c1"># Pass all events to the clustering algorithm</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">)):</span>
+        <span class="n">channels_hit</span><span class="p">,</span> <span class="n">clusters</span><span class="p">,</span> <span class="n">numclus</span><span class="p">,</span> <span class="n">clustersize</span><span class="p">,</span> <span class="n">automasked_hits</span> <span class="o">=</span> <span class="n">nb_clustering</span><span class="p">(</span><span class="n">signal</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">SN</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">noise</span><span class="p">,</span> <span class="n">SN_cut</span><span class="p">,</span>
+                                                                                      <span class="n">SN_ratio</span><span class="p">,</span> <span class="n">SN_cluster</span><span class="p">,</span> <span class="n">numchan</span><span class="p">,</span>
+                                                                                      <span class="n">max_clustersize</span><span class="o">=</span><span class="n">max_clustersize</span><span class="p">,</span>
+                                                                                      <span class="n">masking</span><span class="o">=</span><span class="n">masking</span><span class="p">,</span>
+                                                                                      <span class="n">material</span><span class="o">=</span><span class="n">material</span><span class="p">)</span>
+        <span class="c1"># Build the hitmap for this event</span>
+        <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels_hit</span><span class="p">:</span>
+            <span class="n">hitmap</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># Add the results to the results array for every event</span>
+        <span class="n">prodata</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+            <span class="n">signal</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="n">SN</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="n">CMN</span><span class="p">,</span>
+            <span class="n">CMsig</span><span class="p">,</span>
+            <span class="n">hitmap</span><span class="p">,</span>
+            <span class="n">channels_hit</span><span class="p">,</span>
+            <span class="n">clusters</span><span class="p">,</span>
+            <span class="n">numclus</span><span class="p">,</span>
+            <span class="n">clustersize</span><span class="p">,</span>
+            <span class="n">event_timings</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+        <span class="n">index</span> <span class="o">+=</span><span class="mi">1</span>
+    <span class="k">return</span> <span class="n">prodata</span></div>
+
+<span class="n">jit</span><span class="p">(</span><span class="n">nogil</span><span class="o">=</span><span class="n">gil</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="n">parallel</span><span class="p">,</span> <span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="n">Fast</span><span class="p">)</span>
+<div class="viewcode-block" id="parallel_event_processing"><a class="viewcode-back" href="../../code.html#analysis_classes.nb_analysis_funcs.parallel_event_processing">[docs]</a><span class="k">def</span> <span class="nf">parallel_event_processing</span><span class="p">(</span><span class="n">goodtiming</span><span class="p">,</span> <span class="n">timings</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">pedestal</span><span class="p">,</span> <span class="n">meanCMN</span><span class="p">,</span> <span class="n">meanCMsig</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span>
+                              <span class="n">numchan</span><span class="p">,</span> <span class="n">SN_cut</span><span class="p">,</span> <span class="n">SN_ratio</span><span class="p">,</span> <span class="n">SN_cluster</span><span class="p">,</span> <span class="n">max_clustersize</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+                              <span class="n">masking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">poolsize</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Pool</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">noisy_strips</span> <span class="o">=</span> <span class="p">[]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function handles all logic to distribute the event processing and clustering to several cores</span>
+<span class="sd">    to speed up the calculations. It does not do anything complicated.</span>
+<span class="sd">    :param goodtiming: Array containing the indizes of evetns with good timing</span>
+<span class="sd">    :param events: Array of all events: shape = (events, channels)</span>
+<span class="sd">    :param pedestal: The pedestal: shape = (channels)</span>
+<span class="sd">    :param meanCMN: A single value with the mean CMN of all events per channels</span>
+<span class="sd">    :param meanCMsig: Same thing as meanCMN only the std</span>
+<span class="sd">    :param noise: The noise of every channels: shape = (channels)</span>
+<span class="sd">    :param numchan: Number of channels</span>
+<span class="sd">    :param SN_cut: The SN_cut from the config</span>
+<span class="sd">    :param SN_ratio: The SN_ratio from the config</span>
+<span class="sd">    :param SN_cluster: The SN_cluster from the config</span>
+<span class="sd">    :param max_clustersize: Maximum</span>
+<span class="sd">    :param masking: A boolean of automatic masking should be applied</span>
+<span class="sd">    :param material: Which base material the sensor is. This is needed for the signal polarity</span>
+<span class="sd">    :param poolsize: Poolsize of the multiprocessing</span>
+<span class="sd">    :param Pool: The actual muzltiprocessing pool</span>
+<span class="sd">    :param noisy_strips: All noisy/masked strips from the user</span>
+<span class="sd">    :return: The processed data</span>
+
+<span class="sd">    Written by Dominic Bloech</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Get the number of how many good events there are</span>
+    <span class="n">goodevents</span> <span class="o">=</span> <span class="n">goodtiming</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">automasked</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># Slice out all good events</span>
+    <span class="n">events_good</span> <span class="o">=</span> <span class="n">events</span><span class="p">[</span><span class="n">goodtiming</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">eventiming</span> <span class="o">=</span> <span class="n">timings</span><span class="p">[</span><span class="n">goodtiming</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="c1"># Do in the multiprocessed way if poolsize is greater as one</span>
+    <span class="k">if</span> <span class="n">poolsize</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># Split data for the pools</span>
+        <span class="n">splits</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">goodevents</span><span class="o">/</span><span class="n">poolsize</span><span class="p">)</span> <span class="c1"># you may loose the last event!!!</span>
+        <span class="n">paramslist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">poolsize</span><span class="p">):</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">splits</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">paramslist</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">events_good</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">],</span> <span class="n">pedestal</span><span class="p">,</span> <span class="n">meanCMN</span><span class="p">,</span> <span class="n">meanCMsig</span><span class="p">,</span>
+                               <span class="n">noise</span><span class="p">,</span> <span class="n">numchan</span><span class="p">,</span> <span class="n">SN_cut</span><span class="p">,</span> <span class="n">SN_ratio</span><span class="p">,</span> <span class="n">SN_cluster</span><span class="p">,</span> <span class="n">max_clustersize</span><span class="p">,</span>
+                               <span class="n">masking</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">noisy_strips</span><span class="p">,</span> <span class="n">eventiming</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]))</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span>
+
+        <span class="c1"># Todo: Currently not working due to performance issues</span>
+        <span class="c1">#results = Parallel(n_jobs=poolsize, verbose=1, backend=&#39;threading&#39;, require=&quot;sharedmem&quot;)(map(delayed(event_process_function_multithread),</span>
+        <span class="c1">#                                                                                           paramslist))</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">prange</span><span class="p">(</span><span class="n">poolsize</span><span class="p">):</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">event_process_function_multithread</span><span class="p">(</span><span class="n">paramslist</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+
+        <span class="c1"># Build the correct Hitmap which gets lost during calculations</span>
+        <span class="n">hitmap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">numchan</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">hmap</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+            <span class="n">hitmap</span> <span class="o">+=</span> <span class="n">hmap</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span>
+        <span class="n">prodata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Set the last hit with the full hitmap # I know this is pretty shitty coding style.</span>
+        <span class="n">prodata</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">hitmap</span>
+        <span class="k">return</span> <span class="n">prodata</span><span class="p">,</span> <span class="n">automasked</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># If no multiprocessing is needed, simply call the event_process_function</span>
+        <span class="n">prodata</span> <span class="o">=</span> <span class="n">event_process_function</span><span class="p">(</span><span class="n">events_good</span><span class="p">,</span> <span class="n">pedestal</span><span class="p">,</span> <span class="n">meanCMN</span><span class="p">,</span>
+                                         <span class="n">meanCMsig</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">numchan</span><span class="p">,</span> <span class="n">SN_cut</span><span class="p">,</span> <span class="n">SN_ratio</span><span class="p">,</span> <span class="n">SN_cluster</span><span class="p">,</span>
+                                         <span class="n">max_clustersize</span><span class="p">,</span> <span class="n">masking</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">noisy_strips</span><span class="p">,</span> <span class="n">eventiming</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">prodata</span><span class="p">),</span> <span class="n">automasked</span></div>
+
+<div class="viewcode-block" id="nb_clustering"><a class="viewcode-back" href="../../code.html#analysis_classes.nb_analysis_funcs.nb_clustering">[docs]</a><span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nogil</span><span class="o">=</span><span class="n">gil</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="n">Fast</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">nb_clustering</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">SN</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">SN_cut</span><span class="p">,</span> <span class="n">SN_ratio</span><span class="p">,</span> <span class="n">SN_cluster</span><span class="p">,</span> <span class="n">numchan</span><span class="p">,</span> <span class="n">max_clustersize</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+                  <span class="n">masking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tries to find clusters in the event:</span>
+<span class="sd">    It uses the three-cut algorithm: 1) Apply seed cut</span>
+<span class="sd">                                     2) Search for neighbouring channels above the SN_ratio</span>
+<span class="sd">                                     3) Check if cluster has higher SN as specified</span>
+
+<span class="sd">    :param event: The event: shape = (channels)</span>
+<span class="sd">    :param SN: The SN: shape = (channels)</span>
+<span class="sd">    :param noise: The noise: shape = (channels)</span>
+<span class="sd">    :param SN_cut: float</span>
+<span class="sd">    :param SN_ratio: float</span>
+<span class="sd">    :param SN_cluster: float</span>
+<span class="sd">    :param numchan: Number of channels</span>
+<span class="sd">    :param max_clustersize: Maximum cluster size</span>
+<span class="sd">    :param masking: Bool, if you want masking of channels with false polarity</span>
+<span class="sd">    :param material: The base material of the sensor, needed for polarity check</span>
+<span class="sd">    :return:</span>
+
+<span class="sd">    Written by Dominic Bloech</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">automasked_hit</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># To keep track which channel have been used already here ones due to valid channel calculations</span>
+    <span class="n">used_channels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">numchan</span><span class="p">)</span>
+    <span class="n">numclus</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># The number of found clusters</span>
+    <span class="n">clusters_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">clustersize</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">strips</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+    <span class="n">absSN</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">SN</span><span class="p">)</span>
+    <span class="c1"># SN for neighbours of seed cut</span>
+    <span class="n">SNval</span> <span class="o">=</span> <span class="n">SN_cut</span> <span class="o">*</span> <span class="n">SN_ratio</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_clustersize</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="c1"># Only channels which have a signal/Noise higher then the signal/Noise cut</span>
+    <span class="n">channels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">SN</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">SN_cut</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Mask channels with the false polarity</span>
+    <span class="k">if</span> <span class="n">masking</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">material</span><span class="p">:</span>
+            <span class="c1"># So only negative values are considered aka. p-type sensors</span>
+            <span class="n">masked_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">channels</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">valid_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">event</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">automasked_hit</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">masked_ind</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># So only positive values are considered aka. n-type sensors</span>
+            <span class="n">masked_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">channels</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">valid_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">event</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">automasked_hit</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">masked_ind</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># If none is selected then all will be used</span>
+        <span class="n">valid_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">strips</span><span class="p">)</span>
+
+    <span class="c1"># Set all channels in which we search for hits to 0 to make them valid</span>
+    <span class="n">used_channels</span><span class="p">[</span><span class="n">valid_ind</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># Update the hitted channels #TODO: delete the ones which are automasked, delte not working with numba</span>
+    <span class="c1">#channels = np.delete(channels, masked_ind) delete not supported by numba</span>
+
+    <span class="c1">#Todo: misinterpretation of two very close clusters</span>
+    <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>  <span class="c1"># Loop over all left channels which are a hit, here from &quot;left&quot; to &quot;right&quot;</span>
+            <span class="c1"># Check if the channel has not been used so far</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">used_channels</span><span class="p">[</span><span class="n">ch</span><span class="p">]:</span>
+                <span class="n">used_channels</span><span class="p">[</span><span class="n">ch</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Now the channel is used</span>
+                <span class="n">cluster</span> <span class="o">=</span> <span class="p">[</span><span class="n">ch</span><span class="p">]</span>  <span class="c1"># Size we have no a cluster init it with the channel</span>
+                <span class="n">size</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># The size of the cluster</span>
+
+                <span class="c1"># Now make a loop to find neighbouring hits of cluster, we must go into both directions</span>
+                <span class="n">right_stop</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">left_stop</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">offset</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>  <span class="c1"># Search plus minus the channel found Todo: first entry useless</span>
+                    <span class="c1"># Define bounderis of the chip, so we do not count outside</span>
+                    <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">ch</span><span class="o">-</span><span class="n">i</span> <span class="ow">and</span> <span class="n">ch</span><span class="o">+</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">numchan</span><span class="p">:</span>
+                        <span class="n">chp</span> <span class="o">=</span> <span class="n">ch</span><span class="o">+</span><span class="n">i</span> <span class="c1"># Right side of channel</span>
+                        <span class="n">chm</span> <span class="o">=</span> <span class="n">ch</span><span class="o">-</span><span class="n">i</span> <span class="c1"># Left side of channel</span>
+
+                        <span class="c1"># Look if the right neighbour is above the SN_ratio from the SN_cut</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">right_stop</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">absSN</span><span class="p">[</span><span class="n">chp</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">SNval</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="ow">not</span> <span class="n">used_channels</span><span class="p">[</span><span class="n">chp</span><span class="p">]:</span>
+                                    <span class="n">cluster</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chp</span><span class="p">)</span>
+                                    <span class="n">used_channels</span><span class="p">[</span><span class="n">chp</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                                    <span class="n">size</span> <span class="o">+=</span> <span class="mi">1</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="n">right_stop</span> <span class="o">=</span> <span class="mi">1</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">right_stop</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># Prohibits search for to long clusters or already used channels</span>
+
+                        <span class="c1"># Look if the left neighbour is above the SN_ratio from the SN_cut</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">left_stop</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">absSN</span><span class="p">[</span><span class="n">chm</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">SNval</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="ow">not</span> <span class="n">used_channels</span><span class="p">[</span><span class="n">chm</span><span class="p">]:</span>
+                                    <span class="n">cluster</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chm</span><span class="p">)</span>
+                                    <span class="n">used_channels</span><span class="p">[</span><span class="n">chm</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                                    <span class="n">size</span> <span class="o">+=</span> <span class="mi">1</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="n">left_stop</span> <span class="o">=</span> <span class="mi">1</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">left_stop</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># Prohibits search for to long clusters or already used channels</span>
+
+                <span class="c1"># Look if the cluster SN is big enough to be counted as clusters</span>
+                <span class="n">Scluster</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">cluster</span><span class="p">)))</span> <span class="c1"># Signal</span>
+                <span class="n">Ncluster</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">noise</span><span class="p">,</span> <span class="n">cluster</span><span class="p">))))</span> <span class="c1"># Noise</span>
+                <span class="n">SNcluster</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">Scluster</span><span class="p">,</span><span class="n">Ncluster</span><span class="p">)</span>  <span class="c1"># Actual signal to noise of cluster</span>
+                <span class="k">if</span> <span class="n">SNcluster</span> <span class="o">&gt;</span> <span class="n">SN_cluster</span><span class="p">:</span>
+                    <span class="n">numclus</span> <span class="o">=</span> <span class="n">numclus</span><span class="o">+</span><span class="mi">1</span>
+                    <span class="n">clusters_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+                    <span class="n">clustersize</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">channels</span><span class="p">,</span> <span class="n">clusters_list</span><span class="p">,</span> <span class="n">numclus</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">clustersize</span><span class="p">),</span> <span class="n">automasked_hit</span></div>
+
+
+<span class="n">jit</span><span class="p">(</span><span class="n">nogil</span><span class="o">=</span><span class="n">gil</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="nb_noise_calc"><a class="viewcode-back" href="../../code.html#analysis_classes.nb_analysis_funcs.nb_noise_calc">[docs]</a><span class="k">def</span> <span class="nf">nb_noise_calc</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">pedestal</span><span class="p">,</span> <span class="n">tot_noise</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Noise calculation, normal noise (NN) and common mode noise (CMN)</span>
+<span class="sd">    Uses numpy black magic</span>
+<span class="sd">    :param events: the events</span>
+<span class="sd">    :param pedestal: the pedestal</span>
+<span class="sd">    :param tot_noise: bool if you want the tot_noise</span>
+<span class="sd">    :return:</span>
+
+<span class="sd">    Written by Dominic Bloech</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Calculate the common mode noise for every channel</span>
+    <span class="c1"># Get the signal from event and subtract pedestal</span>
+    <span class="n">cm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">pedestal</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="c1"># Calculate the standard deviation</span>
+    <span class="n">CMsig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">cm</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># Now calculate the mean from the cm to get the actual common mode noise</span>
+    <span class="n">CMnoise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cm</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># Calculate the noise of channels</span>
+    <span class="c1"># Subtract the common mode noise --&gt; Signal[arraylike] - pedestal[arraylike] - Common mode</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">cm</span><span class="p">,</span> <span class="n">CMnoise</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="c1"># This is a trick with the dimensions of ndarrays, score = shape[ (x,y) - x,1 ]</span>
+    <span class="c1"># is possible otherwise a loop is the only way</span>
+    <span class="n">noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tot_noise</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">noise</span><span class="p">,</span> <span class="n">CMnoise</span><span class="p">,</span> <span class="n">CMsig</span>
+    <span class="c1"># convert score matrix into an 1-d array --&gt; np.concatenate(score, axis=0))</span>
+    <span class="k">return</span> <span class="n">noise</span><span class="p">,</span> <span class="n">CMnoise</span><span class="p">,</span> <span class="n">CMsig</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+<span class="c1">#jit(nogil=gil, cache=True)</span>
+<span class="c1">#def nb_process_event(events, pedestal, meanCMN, meanCMsig, noise, numchan, noisy_strips):</span>
+<span class="c1">#    &quot;&quot;&quot;Processes single events - This is an old version which has been replaces by&quot;&quot;&quot;</span>
+<span class="c1">#    #TODO: some elusive error happens here when using jit and njit</span>
+<span class="c1">#    # Calculate the common mode noise for every channel</span>
+<span class="c1">#    signal = events - pedestal  # Get the signal from event and subtract pedestal</span>
+<span class="c1">#</span>
+<span class="c1">#    signal[noisy_strips] = 0</span>
+<span class="c1">#</span>
+<span class="c1">#    # Remove channels which have a signal higher then 5*CMsig+CMN which are not representative</span>
+<span class="c1">#    removed = np.nonzero(signal &lt; (5. * meanCMsig + meanCMN))</span>
+<span class="c1">#    prosignal = signal[removed]</span>
+<span class="c1">#</span>
+<span class="c1">#    if prosignal.any():</span>
+<span class="c1">#        cmpro = np.mean(prosignal)</span>
+<span class="c1">#        sigpro = np.std(prosignal)</span>
+<span class="c1">#</span>
+<span class="c1">#        corrsignal = signal - cmpro</span>
+<span class="c1">#        SN = corrsignal / noise</span>
+<span class="c1">#</span>
+<span class="c1">#        return corrsignal, SN, cmpro, sigpro</span>
+<span class="c1">#    else:</span>
+<span class="c1">#        return np.zeros(numchan), np.zeros(numchan), 0., 0.  # A default value return if everything fails</span>
+
+<span class="n">jit</span><span class="p">(</span><span class="n">nogil</span><span class="o">=</span><span class="n">gil</span><span class="p">,</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="n">Fast</span><span class="p">)</span>
+<div class="viewcode-block" id="nb_preprocess_all_events"><a class="viewcode-back" href="../../code.html#analysis_classes.nb_analysis_funcs.nb_preprocess_all_events">[docs]</a><span class="k">def</span> <span class="nf">nb_preprocess_all_events</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">pedestal</span><span class="p">,</span> <span class="n">meanCMN</span><span class="p">,</span> <span class="n">meanCMsig</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">numchan</span><span class="p">,</span> <span class="n">noisy_strips</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Preprocesses all events and makes some clean-up on the signals.</span>
+<span class="sd">    It calculates the SN for every events per channel and the CMN, CMNsig for every event.</span>
+<span class="sd">    Furthermore it will return you the pure signal without pedestal, CMN etc.</span>
+
+<span class="sd">    Warning: This function uses numpy black magic, if you are confused how a calculate things here,</span>
+<span class="sd">             Please read a good introduction to numpy array operations =). But simply put I apply an</span>
+<span class="sd">             operation usually to a whole array divisions are such a things. Every value in both</span>
+<span class="sd">             arrays will be divided separately etc.</span>
+
+<span class="sd">    :param events: All events shape = (events, channels)</span>
+<span class="sd">    :param pedestal: The pedestal: shape = (channels)</span>
+<span class="sd">    :param meanCMN: The mean CMN</span>
+<span class="sd">    :param meanCMsig: The mean CMNsig</span>
+<span class="sd">    :param noise: The noise per channel: shape = (channels)</span>
+<span class="sd">    :param numchan: The number of channels</span>
+<span class="sd">    :param noisy_strips: The noisy strips: shape = (channels)</span>
+<span class="sd">    :return: corrsignal - signal without the garbage: shape = (events, channels)</span>
+<span class="sd">             SN - Signal to noise: shape = (events)</span>
+<span class="sd">             CMN - Common mode for every event: shape = (events)</span>
+<span class="sd">             CMsig - Common mode std for every event: shape = (events)</span>
+
+<span class="sd">    Written by Dominic Bloech</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#Calculate the common mode noise for every channel</span>
+    <span class="n">signal</span> <span class="o">=</span> <span class="n">events</span> <span class="o">-</span> <span class="n">pedestal</span>  <span class="c1"># Get the signal from event and subtract pedestal</span>
+
+    <span class="c1"># Remove channels which have a signal higher then 5*CMsig+CMN which are not representative</span>
+    <span class="n">removed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">signal</span><span class="p">[:,]</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mf">5.</span> <span class="o">*</span> <span class="n">meanCMsig</span> <span class="o">+</span> <span class="n">meanCMN</span><span class="p">))</span>
+    <span class="n">signal</span><span class="p">[</span><span class="n">removed</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">removed</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># Set the signals to 0</span>
+    <span class="n">prosignal</span> <span class="o">=</span> <span class="n">signal</span>
+
+    <span class="k">if</span> <span class="n">prosignal</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="c1"># Calculate the mean CMN and CMNsig</span>
+        <span class="n">cmpro</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">prosignal</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">sigpro</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">prosignal</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Subtract the CMN for all channels</span>
+        <span class="n">corrsignal</span> <span class="o">=</span> <span class="n">signal</span> <span class="o">-</span> <span class="n">cmpro</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span>
+        <span class="c1"># Get rid of noisy strips by setting the signal to 0 which are not needed for further calculations</span>
+        <span class="n">corrsignal</span><span class="p">[:,</span> <span class="n">noisy_strips</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># Calculate the actuall SN</span>
+        <span class="n">SN</span> <span class="o">=</span> <span class="n">corrsignal</span> <span class="o">/</span> <span class="n">noise</span>
+
+        <span class="k">return</span> <span class="n">corrsignal</span><span class="p">,</span> <span class="n">SN</span><span class="p">,</span> <span class="n">cmpro</span><span class="p">,</span> <span class="n">sigpro</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">numchan</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">numchan</span><span class="p">),</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span>  <span class="c1"># A default value return if everything fails</span></div>
+
+
+<div class="viewcode-block" id="nb_process_cluster_size"><a class="viewcode-back" href="../../code.html#analysis_classes.nb_analysis_funcs.nb_process_cluster_size">[docs]</a><span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">nogil</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">nb_process_cluster_size</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;get the events with the different clustersizes its the numba optimized version</span>
+
+<span class="sd">    Written by Dominic Bloech</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">size</span><span class="p">,</span> <span class="n">valid_events_clustersize</span><span class="p">,</span> <span class="n">valid_events_Signal</span><span class="p">,</span> <span class="n">valid_events_clusters</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">charge_cal</span><span class="p">,</span> <span class="n">convert_ADC</span> <span class="o">=</span> <span class="n">args</span>
+    <span class="n">ClusInd</span> <span class="o">=</span> <span class="p">[[],</span> <span class="p">[]]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">event</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">valid_events_clustersize</span><span class="p">):</span>
+             <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">clus</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+                 <span class="k">if</span> <span class="n">clus</span> <span class="o">==</span> <span class="n">size</span><span class="p">:</span>
+                     <span class="n">ClusInd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">i</span><span class="p">])</span>
+                     <span class="n">ClusInd</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">j</span><span class="p">])</span>
+
+    <span class="n">signal_clst_event</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">noise_clst_event</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ind</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ClusInd</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">ClusInd</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+        <span class="c1"># Signal calculations</span>
+        <span class="n">signal_clst_event</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">valid_events_Signal</span><span class="p">[</span><span class="n">ind</span><span class="p">],</span> <span class="n">valid_events_clusters</span><span class="p">[</span><span class="n">ind</span><span class="p">][</span><span class="n">y</span><span class="p">]))</span>
+        <span class="c1"># Noise Calculations</span>
+        <span class="n">noise_clst_event</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">noise</span><span class="p">,</span> <span class="n">valid_events_clusters</span><span class="p">[</span><span class="n">ind</span><span class="p">][</span><span class="n">y</span><span class="p">]))</span>  <span class="c1"># Get the Noise of an event</span>
+
+    <span class="c1"># totalE = np.sum(convert_ADC_to_e(signal_clst_event, charge_cal), axis=1)</span>
+    <span class="n">totalE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">convert_ADC</span><span class="p">(</span><span class="n">signal_clst_event</span><span class="p">,</span> <span class="n">charge_cal</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># eError is a list containing electron signal noise</span>
+    <span class="c1"># totalNoise = np.sqrt(np.sum(convert_ADC_to_e(noise_clst_event, charge_cal),</span>
+    <span class="c1">#                             axis=1))</span>
+    <span class="n">totalNoise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">convert_ADC</span><span class="p">(</span><span class="n">noise_clst_event</span><span class="p">,</span> <span class="n">charge_cal</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="n">preresults</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;signal&quot;</span><span class="p">:</span> <span class="n">totalE</span><span class="p">,</span> <span class="s2">&quot;noise&quot;</span><span class="p">:</span> <span class="n">totalNoise</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">preresults</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Dominic Bloech
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

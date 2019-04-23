@@ -1,0 +1,327 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>analysis_classes.base_analysis &mdash; AliSys 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> AliSys
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../MainAnalysis.html">The Main Analyis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../AdditionalAnalysis.html">Additional Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Plotting.html">Plotting</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../code.html">API references</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">AliSys</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>analysis_classes.base_analysis</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for analysis_classes.base_analysis</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This file contains the basis analysis class for the ALiBaVa analysis&quot;&quot;&quot;</span>
+<span class="c1">#pylint: disable=C0103</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">analysis_classes.nb_analysis_funcs</span> <span class="k">import</span> <span class="n">parallel_event_processing</span>
+
+<div class="viewcode-block" id="BaseAnalysis"><a class="viewcode-back" href="../../code.html#analysis_classes.base_analysis.BaseAnalysis">[docs]</a><span class="k">class</span> <span class="nc">BaseAnalysis</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;BaseAnalysis handles the basic clustering analysis of all passed events.</span>
+<span class="sd">    It looks for good timing events, the timing window can be specified.</span>
+
+<span class="sd">    Warning: BaseAnalysis benefits of multiprocessing and vectorization by the numba</span>
+<span class="sd">    jit module. Therefore, no calculations are done in this script. For more</span>
+<span class="sd">    information on how the different parts of the algorithm exactly are working,</span>
+<span class="sd">    please refer to the nb_analysis_funcs.py file.</span>
+
+<span class="sd">    That said, I will explain how in principal the algorithm is working:</span>
+
+<span class="sd">    Basic Clustering algorithm:</span>
+<span class="sd">        - Before we do anything we have to subtract the pedestal from our signal.</span>
+<span class="sd">          This will result in a (hopefully) zero&#39;ish signal for most channels (except</span>
+<span class="sd">          the ones which are hit).</span>
+<span class="sd">          Otherwise we could not distinguish between signal and the baseline signal.</span>
+<span class="sd">          Next step is to remove events which show channels with extreme high signals</span>
+<span class="sd">          noise. This is done by simply cutting events showing signal &gt; 5*CMN*CMsig</span>
+<span class="sd">          CMN - Common Mode Noise, CMsig - Common mode standard deviation.</span>
+<span class="sd">          These events are dominated by common mode noise and would result in false</span>
+<span class="sd">          positive hits.</span>
+<span class="sd">          Whit basic garbage clean up we calculate the mean signal and std of every</span>
+<span class="sd">          event. We will subtract the mean of all channels, to get rid of common mode</span>
+<span class="sd">          in the event. We then build the ratio between the residual signal vs. the</span>
+<span class="sd">          noise for EVERY channel. --&gt; We have our SN for every channel.</span>
+<span class="sd">          This is all done in the nb_preprocess_all_events function</span>
+<span class="sd">        - We then are looking for a so called seed cut. Meaning we are looking for</span>
+<span class="sd">          channels which show a higher Signal to Noise - SN as the specified one</span>
+<span class="sd">          in the configs. Next in line we need to get rid of false polarized signals,</span>
+<span class="sd">          which slipped our previous clean up. This is simply done by only considering</span>
+<span class="sd">          correct polarized signals.</span>
+<span class="sd">        - Now the fun begins: We are taking every hit from the SN cut and look</span>
+<span class="sd">          left and right, to find neighbouring hits which are below the SN cut.</span>
+<span class="sd">          Therefore, we have the parameter SN_ratio, which applies a factor to the SN_cut.</span>
+<span class="sd">          If the neighbour strips are obove this threshold it will be considered as hit too</span>
+<span class="sd">          and will be added to the cluster. This goes on until no strips are above this threshold.</span>
+<span class="sd">          Finally we calculate the SN for the whole cluster which in turn has to be above</span>
+<span class="sd">          as specified value, otherwise the cluster gets rejected.</span>
+<span class="sd">          Warning: In reality this is not trivial to do and I therefore refer to the</span>
+<span class="sd">          dedicated function: nb_clustering</span>
+<span class="sd">        - Finally all data has been processed and we have finished clustering</span>
+
+<span class="sd">        The data structure this algorithm returns you is as follows:</span>
+
+<span class="sd">        return is of type numpy.array:</span>
+<span class="sd">            [0] = processed signal: shape = (events, channels)</span>
+<span class="sd">            [1] = SN: shape = (events, channels)</span>
+<span class="sd">            [2] = CMN: shape = (events)</span>
+<span class="sd">            [3] = CMsig: shape = (events)</span>
+<span class="sd">            [4] = Hitmap: shape = (events, channels)</span>
+<span class="sd">            [5] = Channels hit: shape = (hitted channels)</span>
+<span class="sd">            [6] = Clusters: shape = (Channels hit shape = (channels in cluster))</span>
+<span class="sd">            [7] = Number of Clusters: shape = (events)</span>
+<span class="sd">            [8] = Clustersize: shape = (Channels hit: shape = (len(Clusters))</span>
+<span class="sd">            [9] = Timing: shape = (events)</span>
+
+
+<span class="sd">        # Base Analysis specific params</span>
+<span class="sd">            - timing: [min, max] - Minimum/Maximum timing window</span>
+<span class="sd">            - sensor_type: &quot;n-in-p&quot; or &quot;p-in-n&quot;</span>
+<span class="sd">            - automasking: bool - if automasking of false polarized signals will be done</span>
+<span class="sd">            - SN_cut: float - SN ratio at which it is considered a hit</span>
+<span class="sd">            - SN_ratio: float - ratio of SN_cut to look for neighbouring hits</span>
+<span class="sd">            - SN_cluster: float - Minimum SN of a cluster to be considered</span>
+<span class="sd">            - numchan: int - Number of channels</span>
+<span class="sd">            - max_cluster_size: int - maximum clustersize to look for</span>
+
+<span class="sd">    Written by Dominic Bloech</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">main</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">timing</span><span class="p">,</span> <span class="n">logger</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param main: MainAnalysis instance for additional paramerters if needed</span>
+<span class="sd">        :param events: The actual events must be of shape = (events, channels)</span>
+<span class="sd">        :param timing: an array of all timing for every event (must be the same length</span>
+<span class="sd">                       as events parameter!!!</span>
+<span class="sd">        :param logger: If you want to pass a specific logger you can do so</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">logger</span> <span class="ow">or</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">main</span> <span class="o">=</span> <span class="n">main</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">events</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventtiming</span> <span class="o">=</span> <span class="n">timing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prodata</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+
+<div class="viewcode-block" id="BaseAnalysis.run"><a class="viewcode-back" href="../../code.html#analysis_classes.base_analysis.BaseAnalysis.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Does the actual event analysis and clustering in optimized python&quot;&quot;&quot;</span>
+
+        <span class="c1"># Get events with good timing and only process these events</span>
+        <span class="n">gtime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eventtiming</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">timingWindow</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">eventtiming</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">timingWindow</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="c1">#self.eventtiming = self.eventtiming[gtime]</span>
+        <span class="c1"># Warning: If you have a RS and pulseshape recognition enabled the</span>
+        <span class="c1"># timing window has to be set accordingly</span>
+
+        <span class="c1"># This should, in theory, use parallelization of the loop over event</span>
+        <span class="c1"># but i did not see any performance boost, maybe you can find the bug =)?</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">automasked_hits</span> <span class="o">=</span> <span class="n">parallel_event_processing</span><span class="p">(</span><span class="n">gtime</span><span class="p">,</span>
+                                                              <span class="bp">self</span><span class="o">.</span><span class="n">eventtiming</span><span class="p">,</span>
+                                                              <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="p">,</span>
+                                                              <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">pedestal</span><span class="p">,</span>
+                                                              <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">CMN</span><span class="p">),</span>
+                                                              <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">CMsig</span><span class="p">),</span>
+                                                              <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">noise</span><span class="p">,</span>
+                                                              <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">numchan</span><span class="p">,</span>
+                                                              <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">SN_cut</span><span class="p">,</span>
+                                                              <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">SN_ratio</span><span class="p">,</span>
+                                                              <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">SN_cluster</span><span class="p">,</span>
+                                                              <span class="n">max_clustersize</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">max_cluster_size</span><span class="p">,</span>
+                                                              <span class="n">masking</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">automasking</span><span class="p">,</span>
+                                                              <span class="n">material</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">material</span><span class="p">,</span>
+                                                              <span class="n">poolsize</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">process_pool</span><span class="p">,</span>
+                                                              <span class="n">Pool</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">Pool</span><span class="p">,</span>
+                                                              <span class="n">noisy_strips</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">noise_analysis</span><span class="o">.</span><span class="n">noisy_strips</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prodata</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">automasked_hit</span> <span class="o">=</span> <span class="n">automasked_hits</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">prodata</span></div></div>
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Dominic Bloech
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

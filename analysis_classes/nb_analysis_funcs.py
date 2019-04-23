@@ -1,5 +1,7 @@
-"""This files contains analysis function optimizes by numba jit capabilities"""
-#pylint: disable=E1111,C0103
+"""These functions are speed optimized functions which can be used for a large variety
+of cases. They use the numba jit functionality to gain speed ups of O(50-60)
+compared to native Python/numpy. For more information see the Numba documentation on
+`Numba <https://http://numba.pydata.org/>`_"""
 from numba import jit, prange
 import numpy as np
 
